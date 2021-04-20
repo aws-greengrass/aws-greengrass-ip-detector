@@ -1,17 +1,11 @@
-## My Project
+## AWS Greengrass IP Detector
 
-TODO: Fill this README out!
+This module implements the IP Detector for Greengrass.
 
-Be sure to:
+In order to keep the GGC connectivity information updated IP Detector does follwing things:
+* Monitor the changes in the network connectivity of GGC.
+* Update the connectivity information for any changes. 
 
-* Change the title in this README
-* Edit your repository description on GitHub
+#### License
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
-
-## License
-
-This project is licensed under the Apache-2.0 License.
-
+This library is licensed under the Apache 2.0 License. 
