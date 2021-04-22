@@ -1,14 +1,14 @@
 ---
-RecipeFormatVersion: '2020-01-25'
+RecipeFormatVersion: '2021-04-22'
 ComponentName: aws.greengrass.clientdevices.IpDetector
 ComponentDescription: AWS Greengrass Ip Detector Manager
 ComponentPublisher: AWS
-ComponentVersion: 0.0.0
+ComponentVersion: 1.0.0
 ComponentType: aws.greengrass.plugin
+ComponentDependencies:
+  "aws.greengrass.clientdevices.Auth":
+    "VersionRequirement": ">=1.0.0"
+    "DependencyType": "HARD"
 Manifests:
-  - Parameters:
-    - Name: devices
-      Value: "[]"
-      Type: STRING
-    Artifacts:
+  - Artifacts:
       - URI: s3://gg-dev-artifacts-$stage/$componentName/$version/aws.greengrass.clientdevices.IpDetector.jar
