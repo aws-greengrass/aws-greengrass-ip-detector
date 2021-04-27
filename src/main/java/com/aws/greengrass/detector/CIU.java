@@ -56,7 +56,7 @@ public class CIU {
         try {
             scheduledExecutorService.scheduleAtFixedRate(() -> {
                 updateIps();
-                }, initialDelay, 10, TimeUnit.SECONDS);
+                }, initialDelay, 60, TimeUnit.SECONDS);
         } catch (Exception e) {
             logger.atError().log("Ip detector check interrupted {}", e);
         }
