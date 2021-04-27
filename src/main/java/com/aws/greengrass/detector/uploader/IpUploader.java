@@ -4,8 +4,6 @@ import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detectorclient.Client;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.greengrass.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrass.model.UpdateConnectivityInfoResponse;
 
@@ -38,6 +36,7 @@ public class IpUploader {
      *
      * @param ipAddresses list of ipAddresses
      */
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     public void updateIpAddresses(List<String> ipAddresses) {
         synchronized (periodicUpdateInProgressLock) {
             if (ipAddresses == null || ipAddresses.isEmpty() || !hasIpsChanged(ipAddresses)) {
@@ -57,7 +56,7 @@ public class IpUploader {
                 if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
                     this.ipAddresses = ipAddresses;
                 }
-            } catch (AwsServiceException | SdkClientException e) {
+            } catch (Exception e) {
                 logger.atError().log("Update connectivity call failed {}", e);
             }
         }
