@@ -18,34 +18,30 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith({MockitoExtension.class})
-public class CIUTest {
+public class IpDetectorManagerTest {
 
     @Mock
     private IpUploader ipUploader;
     @Mock
     private IpDetector ipDetector;
 
-    CIU ciu;
+    IpDetectorManager ipDetectorManager;
 
     @Test
     public void GIVEN_ip_addresses_found_WHEN_initialize_THEN_upload_called() throws SocketException {
-        ciu = new CIU(ipUploader, ipDetector);
+        ipDetectorManager = new IpDetectorManager(ipUploader, ipDetector);
         List <String> ips = new ArrayList<>();
         ips.add(TestConstants.IP_1);
         when(ipDetector.getAllIpAddresses()).thenReturn(ips);
-        ciu.updateIps();
+        ipDetectorManager.updateIps();
         verify(ipUploader, times(1)).updateIpAddresses(ips);
     }
 
     @Test
     public void GIVEN_ip_addresses_not_found_WHEN_initialize_THEN_upload_called() throws SocketException {
-        ciu = new CIU(ipUploader, ipDetector);
+        ipDetectorManager = new IpDetectorManager(ipUploader, ipDetector);
         when(ipDetector.getAllIpAddresses()).thenReturn(new ArrayList<>());
-        ciu.updateIps();
-        verify(ipUploader, times(0)).updateIpAddresses(any());
-
-        when(ipDetector.getAllIpAddresses()).thenReturn(null);
-        ciu.updateIps();
+        ipDetectorManager.updateIps();
         verify(ipUploader, times(0)).updateIpAddresses(any());
     }
 }

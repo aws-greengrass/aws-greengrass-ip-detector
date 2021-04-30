@@ -12,28 +12,28 @@ import com.aws.greengrass.lifecyclemanager.PluginService;
 
 import javax.inject.Inject;
 
-@ImplementsService(name = DetectorService.DECTECTOR_SERVICE_NAME)
-public class DetectorService extends PluginService {
+@ImplementsService(name = IpDetectorService.DECTECTOR_SERVICE_NAME)
+public class IpDetectorService extends PluginService {
     public static final String DECTECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IpDetector";
-    private final CIU ciu;
+    private final IpDetectorManager ipDetectorManager;
 
     /**
      * Constructor.
      *
      * @param topics  Root Configuration topic for this service
-     * @param ciu Ip detector
+     * @param ipDetectorManager Ip detector
      *
      */
     @Inject
-    public DetectorService(Topics topics, CIU ciu) {
+    public IpDetectorService(Topics topics, IpDetectorManager ipDetectorManager) {
         super(topics);
-        this.ciu = ciu;
+        this.ipDetectorManager = ipDetectorManager;
     }
 
     @Override
     protected void install() throws InterruptedException {
         super.install();
-        ciu.startIpDetection();
+        ipDetectorManager.startIpDetection();
         logger.atInfo().log("Starting ...");
 
     }

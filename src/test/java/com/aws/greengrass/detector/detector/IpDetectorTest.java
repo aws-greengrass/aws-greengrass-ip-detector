@@ -52,7 +52,7 @@ class IpDetectorTest {
     public void GIVEN_noIps_WHEN_get_ipAddresses_THEN_null_returned() throws SocketException {
         ipDetector = new IpDetector();
         List<String> ipAddresses = ipDetector.checkIpAddressesUpdates(null);
-        assertEquals(null, ipAddresses);
+        assertEquals(0, ipAddresses.size());
     }
 
     @Test

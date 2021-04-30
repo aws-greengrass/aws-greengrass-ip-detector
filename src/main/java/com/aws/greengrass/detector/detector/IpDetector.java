@@ -26,11 +26,11 @@ public class IpDetector {
      */
     //Default for JUnit Testing
     List<String> checkIpAddressesUpdates(Enumeration<NetworkInterface> interfaces) throws SocketException {
+        List<String> ipAddresses = new ArrayList<>();
         if (interfaces == null) {
-            return null;
+            return ipAddresses;
         }
 
-        List<String> ipAddresses = new ArrayList<>();
         while (interfaces.hasMoreElements()) {
             NetworkInterface networkInterface = interfaces.nextElement();
 

@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.services.greengrass.model.UpdateConnectivityInfoResponse;
+import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
 import java.util.ArrayList;
 import java.util.List;

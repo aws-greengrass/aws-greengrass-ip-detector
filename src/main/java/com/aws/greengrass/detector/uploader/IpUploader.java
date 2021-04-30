@@ -4,8 +4,8 @@ import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detectorclient.Client;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
-import software.amazon.awssdk.services.greengrass.model.ConnectivityInfo;
-import software.amazon.awssdk.services.greengrass.model.UpdateConnectivityInfoResponse;
+import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
+import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
-public class CIU {
+public class IpDetectorManager {
     public static final int DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC = 180;
     private final IpUploader ipUploader;
     private final IpDetector ipDetector;
-    private final Logger logger = LogManager.getLogger(CIU.class);
+    private final Logger logger = LogManager.getLogger(IpDetectorManager.class);
 
     @Inject
-    public CIU(IpUploader ipUploader, IpDetector ipDetector) {
+    public IpDetectorManager(IpUploader ipUploader, IpDetector ipDetector) {
         this.ipDetector = ipDetector;
         this.ipUploader = ipUploader;
     }
@@ -29,8 +29,8 @@ public class CIU {
     void updateIps() {
         try {
             List<String> ipAddresses = ipDetector.getAllIpAddresses();
-            if (ipAddresses == null || ipAddresses.isEmpty()) {
-                logger.atInfo().log("No valid ip Address found in ip detector");
+            if (ipAddresses.isEmpty()) {
+                logger.atDebug().log("No valid ip Address found in ip detector");
                 return;
             }
             ipUploader.updateIpAddresses(ipAddresses);
@@ -44,10 +44,6 @@ public class CIU {
      * @throws InterruptedException when interrupted
      */
     public void startIpDetection() {
-        //this may happen in Junit test where we start the kernel
-        if (ipDetector == null || ipUploader == null) {
-            return;
-        }
 
         ScheduledExecutorService scheduledExecutorService =
                 Executors.newSingleThreadScheduledExecutor();
