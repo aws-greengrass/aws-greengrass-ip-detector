@@ -32,7 +32,7 @@ public class ClientWrapper {
     }
 
     /**
-     * Constructor.
+     * Update connectivity information.
      *
      * @param connectivityInfoItems list of connectivity info items
      */
