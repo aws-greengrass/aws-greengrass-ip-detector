@@ -2,7 +2,6 @@ package com.aws.greengrass.detector.uploader;
 
 import com.aws.greengrass.detector.client.ClientWrapper;
 import com.aws.greengrass.detector.config.Config;
-import com.sun.istack.internal.NotNull;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
@@ -61,7 +60,7 @@ public class IpUploader {
     }
 
     //Default for JUnit Testing
-    boolean hasIpsChanged(@NotNull List<String> ips) {
+    boolean hasIpsChanged(List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
         } else if (ips.equals(this.ipAddresses)) {
