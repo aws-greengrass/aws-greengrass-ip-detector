@@ -40,12 +40,9 @@ class IpDetectorTest {
         ipDetector = new IpDetector();
         List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumration);
 
-        assertEquals(5, ipAddresses.size());
+        assertEquals(2, ipAddresses.size());
         assertEquals(TestConstants.IP_1, ipAddresses.get(0).getHostAddress());
         assertEquals(TestConstants.IP_2, ipAddresses.get(1).getHostAddress());
-        assertEquals(TestConstants.IP_3, ipAddresses.get(2).getHostAddress());
-        assertEquals(TestConstants.IP_4, ipAddresses.get(3).getHostAddress());
-        assertEquals(TestConstants.IP_5, ipAddresses.get(4).getHostAddress());
     }
 
     @Test

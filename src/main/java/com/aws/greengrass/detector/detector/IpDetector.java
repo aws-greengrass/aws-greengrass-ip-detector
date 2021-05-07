@@ -1,5 +1,6 @@
 package com.aws.greengrass.detector.detector;
 
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -33,6 +34,9 @@ public class IpDetector {
 
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress address = interfaceAddress.getAddress();
+                if (address instanceof Inet6Address) {
+                    continue;
+                }
                 ipAddresses.add(address);
             }
         }
