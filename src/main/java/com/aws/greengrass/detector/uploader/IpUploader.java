@@ -1,22 +1,20 @@
 package com.aws.greengrass.detector.uploader;
 
+import com.aws.greengrass.detector.client.ClientWrapper;
 import com.aws.greengrass.detector.config.Config;
-import com.aws.greengrass.detectorclient.Client;
-import com.aws.greengrass.logging.api.Logger;
-import com.aws.greengrass.logging.impl.LogManager;
+import com.sun.istack.internal.NotNull;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
-import java.util.ArrayList;
+import java.net.InetAddress;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 public class IpUploader {
 
-    private final Client client;
+    private final ClientWrapper client;
     private final Config config;
-    private final Logger logger = LogManager.getLogger(IpUploader.class);
-    private final Object periodicUpdateInProgressLock = new Object();
     private List<String> ipAddresses;
 
     /**
@@ -26,7 +24,7 @@ public class IpUploader {
      * @param config config for fetching the configuration values
      */
     @Inject
-    public IpUploader(Client client, Config config) {
+    public IpUploader(ClientWrapper client, Config config) {
         this.client = client;
         this.config = config;
     }
@@ -36,40 +34,39 @@ public class IpUploader {
      *
      * @param ipAddresses list of ipAddresses
      */
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
-    public void updateIpAddresses(List<String> ipAddresses) {
-        synchronized (periodicUpdateInProgressLock) {
-            if (ipAddresses == null || ipAddresses.isEmpty() || !hasIpsChanged(ipAddresses)) {
+    public void updateIpAddresses(List<InetAddress> ipAddresses) {
+        if (ipAddresses == null || ipAddresses.isEmpty()) {
+            return;
+        }
+        List<String> ips = ipAddresses.stream().filter(ip -> ip != null && ip.getHostAddress() != null)
+                .map(ip -> ip.getHostAddress()).collect(Collectors.toList());
+        uploadedUpdatedAddresses(ips);
+    }
+
+    //Default for JUnit Testing
+    void uploadedUpdatedAddresses(List<String> ips) {
+        synchronized (this) {
+            if (!hasIpsChanged(ips)) {
                 return;
             }
-
-            List<ConnectivityInfo> connectivityInfoItems = new ArrayList<>();
-            for (String ipAddress : ipAddresses) {
-                ConnectivityInfo connectivityInfo = ConnectivityInfo.builder().hostAddress(ipAddress)
-                        .metadata("").id(ipAddress).portNumber(config.getMqttPort()).build();
-                connectivityInfoItems.add(connectivityInfo);
-            }
-
-            try {
-                UpdateConnectivityInfoResponse connectivityInfoResponse =
-                        client.updateConnectivityInfo(connectivityInfoItems);
-                if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
-                    this.ipAddresses = ipAddresses;
-                }
-            } catch (Exception e) {
-                logger.atError().log("Update connectivity call failed {}", e);
+            List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
+                    .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
+                    .collect(Collectors.toList());
+            UpdateConnectivityInfoResponse connectivityInfoResponse =
+                    client.updateConnectivityInfo(connectivityInfoItems);
+            if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
+                this.ipAddresses = ips;
             }
         }
     }
 
     //Default for JUnit Testing
-    boolean hasIpsChanged(List<String> ips) {
+    boolean hasIpsChanged(@NotNull List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (ips == null || ips.equals(this.ipAddresses)) {
+        } else if (ips.equals(this.ipAddresses)) {
             return false;
         }
-
         return true;
     }
 

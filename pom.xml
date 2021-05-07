@@ -31,13 +31,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>2.15.47</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -47,22 +40,6 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.6.2</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>greengrass</artifactId>
-            <!-- Exclude transitive dependencies because we have them in the Nucleus already -->
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>apache-client</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

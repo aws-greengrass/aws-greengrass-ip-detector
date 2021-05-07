@@ -1,4 +1,4 @@
-package com.aws.greengrass.detectorclient;
+package com.aws.greengrass.detector.client;
 
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.util.Coerce;
@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivity
 import java.util.List;
 import javax.inject.Inject;
 
-public class Client {
+public class ClientWrapper {
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
 
@@ -25,8 +25,8 @@ public class Client {
      */
 
     @Inject
-    public Client(DeviceConfiguration deviceConfiguration,
-                  GreengrassServiceClientFactory clientFactory) {
+    public ClientWrapper(DeviceConfiguration deviceConfiguration,
+                         GreengrassServiceClientFactory clientFactory) {
         this.deviceConfiguration = deviceConfiguration;
         this.clientFactory = clientFactory;
     }
@@ -36,7 +36,6 @@ public class Client {
      *
      * @param connectivityInfoItems list of connectivity info items
      */
-    @SuppressWarnings("PMD.AvoidUncheckedExceptionsInSignatures")
     public UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems) {
         if (connectivityInfoItems == null || connectivityInfoItems.isEmpty()) {
             return null;

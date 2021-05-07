@@ -38,20 +38,20 @@ class IpDetectorTest {
         networkInterfaces.add(networkInterface1);
         Enumeration<NetworkInterface> enumration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        List<String> ipAddresses = ipDetector.checkIpAddressesUpdates(enumration);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumration);
 
         assertEquals(5, ipAddresses.size());
-        assertEquals(TestConstants.IP_1, ipAddresses.get(0));
-        assertEquals(TestConstants.IP_2, ipAddresses.get(1));
-        assertEquals(TestConstants.IP_3, ipAddresses.get(2));
-        assertEquals(TestConstants.IP_4, ipAddresses.get(3));
-        assertEquals(TestConstants.IP_5, ipAddresses.get(4));
+        assertEquals(TestConstants.IP_1, ipAddresses.get(0).getHostAddress());
+        assertEquals(TestConstants.IP_2, ipAddresses.get(1).getHostAddress());
+        assertEquals(TestConstants.IP_3, ipAddresses.get(2).getHostAddress());
+        assertEquals(TestConstants.IP_4, ipAddresses.get(3).getHostAddress());
+        assertEquals(TestConstants.IP_5, ipAddresses.get(4).getHostAddress());
     }
 
     @Test
     public void GIVEN_noIps_WHEN_get_ipAddresses_THEN_null_returned() throws SocketException {
         ipDetector = new IpDetector();
-        List<String> ipAddresses = ipDetector.checkIpAddressesUpdates(null);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(null);
         assertEquals(0, ipAddresses.size());
     }
 
@@ -63,7 +63,7 @@ class IpDetectorTest {
         networkInterfaces.add(networkInterface1);
         Enumeration<NetworkInterface> enumration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        List<String> ipAddresses = ipDetector.checkIpAddressesUpdates(enumration);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumration);
         assertTrue(ipAddresses.isEmpty());
     }
 

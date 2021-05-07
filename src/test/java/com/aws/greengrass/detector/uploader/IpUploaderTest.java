@@ -1,6 +1,6 @@
 package com.aws.greengrass.detector.uploader;
 
-import com.aws.greengrass.detectorclient.Client;
+import com.aws.greengrass.detector.client.ClientWrapper;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.utils.TestConstants;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 @ExtendWith({MockitoExtension.class})
 public class IpUploaderTest {
     @Mock
-    private Client mockClient;
+    private ClientWrapper mockClient;
     @Mock
     private Config mockConfig;
 
@@ -38,7 +38,7 @@ public class IpUploaderTest {
         uploader = new IpUploader(mockClient, mockConfig);
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IP_1);
-        uploader.updateIpAddresses(ips);
+        uploader.uploadedUpdatedAddresses(ips);
         verify(mockClient, times(1)).updateConnectivityInfo(any());
     }
 
@@ -58,20 +58,7 @@ public class IpUploaderTest {
         ScheduledExecutorService scheduledExecutorService =
                 Executors.newSingleThreadScheduledExecutor();
 
-        CountDownLatch latch = new CountDownLatch(3);
-
-        //Throws exception ip list is not updated
-        scheduledExecutorService.schedule(new Runnable() {
-            @Override
-            public void run() {
-                List<String> ips = new ArrayList<>();
-                ips.add(TestConstants.IP_1);
-                Mockito.doThrow(Mockito.mock(MockException.class))
-                        .when(mockClient).updateConnectivityInfo(Mockito.anyList());
-                uploader.updateIpAddresses(ips);
-                latch.countDown();
-            }
-        }, 1, TimeUnit.MILLISECONDS);
+        CountDownLatch latch = new CountDownLatch(2);
 
         //Ip list gets updated
         scheduledExecutorService.schedule(new Runnable() {
@@ -81,7 +68,7 @@ public class IpUploaderTest {
                 ips.add(TestConstants.IP_1);
                 Mockito.doReturn(UpdateConnectivityInfoResponse.builder().version("1").build())
                         .when(mockClient).updateConnectivityInfo(Mockito.anyList());
-                uploader.updateIpAddresses(ips);
+                uploader.uploadedUpdatedAddresses(ips);
                 latch.countDown();
             }
         }, 1000, TimeUnit.MILLISECONDS);
@@ -92,7 +79,7 @@ public class IpUploaderTest {
             public void run() {
                 List<String> ips = new ArrayList<>();
                 ips.add(TestConstants.IP_1);
-                uploader.updateIpAddresses(ips);
+                uploader.uploadedUpdatedAddresses(ips);
                 latch.countDown();
             }
         }, 2000, TimeUnit.MILLISECONDS);
@@ -102,7 +89,7 @@ public class IpUploaderTest {
         } catch (InterruptedException E) {
         }
 
-        verify(mockClient, times(2)).updateConnectivityInfo(any());
+        verify(mockClient, times(1)).updateConnectivityInfo(any());
     }
 
     @Test

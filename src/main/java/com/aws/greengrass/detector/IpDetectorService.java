@@ -31,15 +31,14 @@ public class IpDetectorService extends PluginService {
     }
 
     @Override
-    protected void install() throws InterruptedException {
-        super.install();
-        ipDetectorManager.startIpDetection();
+    public void startup() {
+        reportState(State.RUNNING);
         logger.atInfo().log("Starting ...");
-
+        ipDetectorManager.startIpDetection();
     }
 
     @Override
-    public void startup() {
-        reportState(State.RUNNING);
+    public void shutdown() {
+        ipDetectorManager.stopIpDetection();
     }
 }

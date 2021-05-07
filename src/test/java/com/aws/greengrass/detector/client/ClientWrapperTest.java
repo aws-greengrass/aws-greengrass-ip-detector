@@ -1,4 +1,4 @@
-package com.aws.greengrass.detectorclient;
+package com.aws.greengrass.detector.client;
 
 import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.dependency.Context;
@@ -26,8 +26,8 @@ import static org.mockito.Mockito.verify;
 
 
 @ExtendWith({MockitoExtension.class})
-public class ClientTest {
-    private Client client;
+public class ClientWrapperTest {
+    private ClientWrapper clientWrapper;
     @Mock
     private DeviceConfiguration deviceConfiguration;
 
@@ -53,8 +53,8 @@ public class ClientTest {
                 .portNumber(TestConstants.PORT).metadata("").build();
         List<ConnectivityInfo> connectivityInfoItems = new ArrayList<>();
         connectivityInfoItems.add(connectivityInfo);
-        client = new Client(deviceConfiguration, clientFactory);
-        client.updateConnectivityInfo(connectivityInfoItems);
+        clientWrapper = new ClientWrapper(deviceConfiguration, clientFactory);
+        clientWrapper.updateConnectivityInfo(connectivityInfoItems);
 
         verify(greengrassV2DataClient, times(1))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
@@ -64,12 +64,12 @@ public class ClientTest {
     public void GIVEN_connectivity_info_WHEN_null_THEN_update_connectivity_info_not_called() {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         lenient().doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
-        client = new Client(deviceConfiguration, clientFactory);
-        client.updateConnectivityInfo(null);
+        clientWrapper = new ClientWrapper(deviceConfiguration, clientFactory);
+        clientWrapper.updateConnectivityInfo(null);
         verify(greengrassV2DataClient, times(0))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
 
-        client.updateConnectivityInfo(new ArrayList<>());
+        clientWrapper.updateConnectivityInfo(new ArrayList<>());
         verify(greengrassV2DataClient, times(0))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
     }

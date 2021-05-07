@@ -6,6 +6,7 @@ import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import org.apache.commons.lang3.RandomUtils;
 
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -18,6 +19,8 @@ public class IpDetectorManager {
     public static final int DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC = 180;
     private final IpUploader ipUploader;
     private final IpDetector ipDetector;
+    private final ScheduledExecutorService scheduledExecutorService =
+            Executors.newSingleThreadScheduledExecutor();
     private final Logger logger = LogManager.getLogger(IpDetectorManager.class);
 
     @Inject
@@ -27,34 +30,38 @@ public class IpDetectorManager {
     }
 
     void updateIps() {
+        List<InetAddress> ipAddresses = null;
         try {
-            List<String> ipAddresses = ipDetector.getAllIpAddresses();
+            ipAddresses = ipDetector.getAllIpAddresses();
             if (ipAddresses.isEmpty()) {
                 logger.atDebug().log("No valid ip Address found in ip detector");
                 return;
             }
-            ipUploader.updateIpAddresses(ipAddresses);
         } catch (SocketException e) {
             logger.atError().log("IP Detector socket exception {}", e);
         }
+        ipUploader.updateIpAddresses(ipAddresses);
     }
 
     /**
      * Start getting the ip addresses of the device and see if there are any changes.
-     * @throws InterruptedException when interrupted
      */
     public void startIpDetection() {
-
-        ScheduledExecutorService scheduledExecutorService =
-                Executors.newSingleThreadScheduledExecutor();
-
         long initialDelay = RandomUtils.nextLong(0, DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC);
-        try {
-            scheduledExecutorService.scheduleAtFixedRate(() -> {
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            try {
                 updateIps();
-                }, initialDelay, 60, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            logger.atError().log("Ip detector check interrupted {}", e);
-        }
+            } catch (Exception e) {
+                logger.atError().log("Exception occured in updating ip addresses {}", e);
+            }
+        }, initialDelay, 60, TimeUnit.SECONDS);
+
+    }
+
+    /**
+     * Stop ip detection service.
+     */
+    public void stopIpDetection() {
+        scheduledExecutorService.shutdown();
     }
 }
