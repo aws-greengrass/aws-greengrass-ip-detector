@@ -36,9 +36,9 @@ class IpDetectorTest {
         Mockito.doReturn(true).when(networkInterface1).isUp();
 
         networkInterfaces.add(networkInterface1);
-        Enumeration<NetworkInterface> enumration = Collections.enumeration(networkInterfaces);
+        Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumration);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration);
 
         assertEquals(2, ipAddresses.size());
         assertEquals(TestConstants.IP_1, ipAddresses.get(0).getHostAddress());
@@ -58,9 +58,9 @@ class IpDetectorTest {
         List<NetworkInterface> networkInterfaces = new ArrayList<>();
         Mockito.doReturn(false).when(networkInterface1).isUp();
         networkInterfaces.add(networkInterface1);
-        Enumeration<NetworkInterface> enumration = Collections.enumeration(networkInterfaces);
+        Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumration);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration);
         assertTrue(ipAddresses.isEmpty());
     }
 

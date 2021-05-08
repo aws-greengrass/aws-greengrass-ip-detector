@@ -1,7 +1,7 @@
 package com.aws.greengrass.detector;
 
 import com.aws.greengrass.detector.detector.IpDetector;
-import com.aws.greengrass.detector.uploader.IpUploader;
+import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import org.apache.commons.lang3.RandomUtils;
@@ -17,16 +17,16 @@ import javax.inject.Inject;
 @SuppressWarnings("PMD.AvoidCatchingGenericException")
 public class IpDetectorManager {
     public static final int DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC = 180;
-    private final IpUploader ipUploader;
+    private final ConnectivityUpdater connectivityUpdater;
     private final IpDetector ipDetector;
     private final ScheduledExecutorService scheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor();
     private final Logger logger = LogManager.getLogger(IpDetectorManager.class);
 
     @Inject
-    public IpDetectorManager(IpUploader ipUploader, IpDetector ipDetector) {
+    public IpDetectorManager(ConnectivityUpdater connectivityUpdater, IpDetector ipDetector) {
         this.ipDetector = ipDetector;
-        this.ipUploader = ipUploader;
+        this.connectivityUpdater = connectivityUpdater;
     }
 
     void updateIps() {
@@ -39,8 +39,9 @@ public class IpDetectorManager {
             }
         } catch (SocketException e) {
             logger.atError().log("IP Detector socket exception {}", e);
+            return;
         }
-        ipUploader.updateIpAddresses(ipAddresses);
+        connectivityUpdater.updateIpAddresses(ipAddresses);
     }
 
     /**
@@ -62,6 +63,6 @@ public class IpDetectorManager {
      * Stop ip detection service.
      */
     public void stopIpDetection() {
-        scheduledExecutorService.shutdown();
+        scheduledExecutorService.shutdownNow();
     }
 }
