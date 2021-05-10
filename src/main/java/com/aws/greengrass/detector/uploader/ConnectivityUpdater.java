@@ -69,7 +69,7 @@ public class ConnectivityUpdater {
     boolean hasIpsChanged(@NonNull List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.ipAddresses.containsAll(ips)) {
+        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
             return false;
         }
         return true;
