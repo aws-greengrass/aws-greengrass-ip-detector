@@ -1,0 +1,10 @@
+---
+services:
+    aws.greengrass.clientdevices.IpDetector:
+        configuration:
+    main:
+        lifecycle:
+            install:
+                all: echo All installed
+        dependencies:
+            - aws.greengrass.clientdevices.Auth
