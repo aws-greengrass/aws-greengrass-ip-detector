@@ -18,7 +18,7 @@ import javax.inject.Inject;
 
 @ImplementsService(name = IpDetectorService.DECTECTOR_SERVICE_NAME)
 public class IpDetectorService extends PluginService {
-    public static final String DECTECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IpDetector";
+    public static final String DECTECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
     public static final int DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC = 180;
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
