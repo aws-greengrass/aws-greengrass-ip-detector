@@ -2,6 +2,8 @@ package com.aws.greengrass.detector.uploader;
 
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.detector.config.Config;
+import com.aws.greengrass.logging.api.Logger;
+import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
@@ -19,6 +21,7 @@ public class ConnectivityUpdater {
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
     private final Config config;
+    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
     private List<String> ipAddresses;
 
     /**
@@ -62,6 +65,8 @@ public class ConnectivityUpdater {
                 updateConnectivityInfo(connectivityInfoItems);
         if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
             this.ipAddresses = ips;
+
+            logger.atDebug().log("Connectivity information updated by ip detector");
         }
     }
 
