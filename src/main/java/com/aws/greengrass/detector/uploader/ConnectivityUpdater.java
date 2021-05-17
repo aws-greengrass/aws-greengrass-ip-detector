@@ -73,7 +73,8 @@ public class ConnectivityUpdater {
         if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
             this.ipAddresses = ips;
             this.port = port;
-            logger.atDebug().log("Connectivity information updated by ip detector");
+            logger.atInfo().log("Connectivity information updated by with following IP(s) " + ips.stream()
+                    .collect(Collectors.joining(",")));
         }
     }
 
