@@ -61,7 +61,7 @@ public class IpDetectorService extends PluginService {
         logger.atInfo().log("Starting ...");
         long initialDelay = RandomUtils.nextLong(0, DEFAULT_PERIODIC_UPDATE_INTERVAL_SEC);
         Future<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
-            ipDetectorManager.startIpDetection();
+            ipDetectorManager.startConnectivityUpdate();
         }, initialDelay, 60, TimeUnit.SECONDS);
         this.future = future;
     }
@@ -75,6 +75,7 @@ public class IpDetectorService extends PluginService {
             Integer port = Coerce.toInt(portConfigTopic);
             if (port != null) {
                 this.ipDetectorConfig.setMqttPort(port);
+                ipDetectorManager.checkConnectivityUpdate();
                 logger.atInfo().log("Ip Detector port changed to " + port);
             }
         });

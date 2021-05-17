@@ -63,7 +63,7 @@ public class ConnectivityUpdaterTest {
                 .when(greengrassV2DataClient).updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class));
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IP_1);
-        connectivityUpdater.uploadAddresses(ips);
+        connectivityUpdater.checkAndUploadConnectivityUpdate(ips);
         verify(greengrassV2DataClient, times(1))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
     }
@@ -78,13 +78,13 @@ public class ConnectivityUpdaterTest {
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IP_1);
         assertThrows(GreengrassV2DataException.class, () ->
-                connectivityUpdater.uploadAddresses(ips));
+                connectivityUpdater.checkAndUploadConnectivityUpdate(ips));
     }
 
     @Test
     public void GIVEN_ip_addresses_WHEN_updateIpAddresses_and_null_THEN_update_conn_not_called() {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
-        connectivityUpdater.updateIpAddresses(null);
+        connectivityUpdater.updateConnectivity(null);
         verify(greengrassV2DataClient, times(0))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
         verify(greengrassV2DataClient, times(0))
@@ -100,28 +100,35 @@ public class ConnectivityUpdaterTest {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IP_1);
-        connectivityUpdater.uploadAddresses(ips);
-        connectivityUpdater.uploadAddresses(ips);
+        connectivityUpdater.checkAndUploadConnectivityUpdate(ips);
+        connectivityUpdater.checkAndUploadConnectivityUpdate(ips);
 
         verify(greengrassV2DataClient, times(1))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
     }
 
     @Test
-    public void GIVEN_ips_changed_WHEN_get_ip_addresses_THEN_return_true() {
+    public void GIVEN_ips_changed_WHEN_has_ips_or_port_changed_THEN_return_true() {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null, null);
 
         // old ips null
-        assertTrue(connectivityUpdater.hasIpsChanged(getIps()));
-        connectivityUpdater.setIpAddresses(getIps());
-        assertTrue(connectivityUpdater.hasIpsChanged(getNewIps()));
+        assertTrue(connectivityUpdater.hasIpsOrPortChanged(getIps(), TestConstants.PORT_1));
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
+        assertTrue(connectivityUpdater.hasIpsOrPortChanged(getNewIps(), TestConstants.PORT_1));
     }
 
     @Test
-    public void GIVEN_ips_not_changed_WHEN_get_ip_addresses_THEN_return_false() {
+    public void GIVEN_ips_and_port_not_changed_WHEN_has_ips_or_port_changed_THEN_return_false() {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null, null);
-        connectivityUpdater.setIpAddresses(getIps());
-        assertFalse( connectivityUpdater.hasIpsChanged(getIps()));
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
+        assertFalse( connectivityUpdater.hasIpsOrPortChanged(getIps(), TestConstants.PORT_1));
+    }
+
+    @Test
+    public void GIVEN_port_changed_WHEN_has_ips_or_port_not_changed_THEN_return_true() {
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null, null);
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
+        assertTrue( connectivityUpdater.hasIpsOrPortChanged(getIps(), TestConstants.PORT_2));
     }
 
     private List<String> getIps() {

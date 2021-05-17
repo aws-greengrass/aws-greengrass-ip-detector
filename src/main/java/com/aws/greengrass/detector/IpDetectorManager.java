@@ -22,7 +22,7 @@ public class IpDetectorManager {
         this.connectivityUpdater = connectivityUpdater;
     }
 
-    void updateIps() {
+    void checkConnectivityUpdate() {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses();
@@ -34,15 +34,15 @@ public class IpDetectorManager {
             logger.atError().log("IP Detector socket exception {}", e);
             return;
         }
-        connectivityUpdater.updateIpAddresses(ipAddresses);
+        connectivityUpdater.updateConnectivity(ipAddresses);
     }
 
     /**
      * Start getting the ip addresses of the device and see if there are any changes.
      */
-    public void startIpDetection() {
+    public void startConnectivityUpdate() {
         try {
-            updateIps();
+            checkConnectivityUpdate();
         } catch (Exception e) {
             logger.atError().log("Exception occured in updating ip addresses {}", e);
         }

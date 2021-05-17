@@ -23,6 +23,7 @@ public class ConnectivityUpdater {
     private final Config config;
     private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
     private List<String> ipAddresses;
+    private int port;
 
     /**
      * Constructor.
@@ -44,43 +45,44 @@ public class ConnectivityUpdater {
      *
      * @param ipAddresses list of ipAddresses
      */
-    public void updateIpAddresses(List<InetAddress> ipAddresses) {
+    public void updateConnectivity(List<InetAddress> ipAddresses) {
         if (ipAddresses == null || ipAddresses.isEmpty()) {
             return;
         }
         List<String> ips = ipAddresses.stream().filter(ip -> ip != null && ip.getHostAddress() != null)
                 .map(ip -> ip.getHostAddress()).collect(Collectors.toList());
-        uploadAddresses(ips);
+        checkAndUploadConnectivityUpdate(ips);
     }
 
     //Default for JUnit Testing
-    synchronized void uploadAddresses(List<String> ips) {
-        if (!hasIpsChanged(ips)) {
+    synchronized void checkAndUploadConnectivityUpdate(List<String> ips) {
+        int port = config.getMqttPort();
+        if (!hasIpsOrPortChanged(ips, port)) {
             return;
         }
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
-                .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
+                .hostAddress(ip).metadata("").id(ip).portNumber(port).build())
                 .collect(Collectors.toList());
         UpdateConnectivityInfoResponse connectivityInfoResponse =
-                updateConnectivityInfo(connectivityInfoItems);
+                sendConnectivityUpdate(connectivityInfoItems);
         if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
             this.ipAddresses = ips;
-
+            this.port = port;
             logger.atDebug().log("Connectivity information updated by ip detector");
         }
     }
 
     //Default for JUnit Testing
-    boolean hasIpsChanged(@NonNull List<String> ips) {
+    boolean hasIpsOrPortChanged(@NonNull List<String> ips, int port) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
+        } else if (this.port == port && this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
             return false;
         }
         return true;
     }
 
-    private UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems) {
+    private UpdateConnectivityInfoResponse sendConnectivityUpdate(List<ConnectivityInfo> connectivityInfoItems) {
         if (connectivityInfoItems == null || connectivityInfoItems.isEmpty()) {
             return null;
         }
@@ -93,7 +95,8 @@ public class ConnectivityUpdater {
     }
 
     //For Junit Testing
-    void setIpAddresses(List<String> ipAddresses) {
+    void setIpAddressesAndPort(List<String> ipAddresses, int port) {
         this.ipAddresses = ipAddresses;
+        this.port = port;
     }
 }
