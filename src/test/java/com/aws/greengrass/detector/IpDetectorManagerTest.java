@@ -39,7 +39,7 @@ public class IpDetectorManagerTest {
         List <InetAddress> ips = new ArrayList<>();
         ips.add(Mockito.mock(InetAddress.class));
         when(ipDetector.getAllIpAddresses()).thenReturn(ips);
-        ipDetectorManager.checkConnectivityUpdate();
+        ipDetectorManager.checkAndUpdateConnectivity();
         verify(connectivityUpdater, times(1)).updateConnectivity(ips);
     }
 
@@ -47,7 +47,7 @@ public class IpDetectorManagerTest {
     public void GIVEN_ip_addresses_not_found_WHEN_initialize_THEN_upload_called() throws SocketException {
         ipDetectorManager = new IpDetectorManager(connectivityUpdater, ipDetector);
         when(ipDetector.getAllIpAddresses()).thenReturn(new ArrayList<>());
-        ipDetectorManager.checkConnectivityUpdate();
+        ipDetectorManager.checkAndUpdateConnectivity();
         verify(connectivityUpdater, times(0)).updateConnectivity(any());
     }
 }

@@ -27,7 +27,7 @@ public class IpDetectorManager {
         this.connectivityUpdater = connectivityUpdater;
     }
 
-    void checkConnectivityUpdate() {
+    void checkAndUpdateConnectivity() {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses();
@@ -47,7 +47,7 @@ public class IpDetectorManager {
      */
     public void startConnectivityUpdate() {
         try {
-            checkConnectivityUpdate();
+            checkAndUpdateConnectivity();
         } catch (Exception e) {
             logger.atError().log("Exception occured in updating ip addresses {}", e);
         }
