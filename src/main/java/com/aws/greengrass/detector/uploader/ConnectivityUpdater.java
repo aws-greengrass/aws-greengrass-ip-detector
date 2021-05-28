@@ -69,7 +69,7 @@ public class ConnectivityUpdater {
                 logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
             }
         } catch (RuntimeException e) {
-            logger.atWarn().log("Failed to upload the IP addresses");
+            logger.atWarn().log("Failed to upload the IP addresses {}", e);
         }
     }
 
