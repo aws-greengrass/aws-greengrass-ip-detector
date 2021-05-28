@@ -54,6 +54,7 @@ public class ConnectivityUpdater {
     }
 
     //Default for JUnit Testing
+    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     synchronized void uploadAddresses(List<String> ips) {
         if (!hasIpsChanged(ips)) {
             return;
