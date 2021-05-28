@@ -65,8 +65,7 @@ public class ConnectivityUpdater {
                 updateConnectivityInfo(connectivityInfoItems);
         if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
             this.ipAddresses = ips;
-            logger.atInfo().log("Connectivity information updated by with following IP(s) " + ips.stream()
-                    .collect(Collectors.joining(",")));
+            logger.atInfo().kv("IPs", ips).log("Uploading IP addresses");
         }
     }
 
