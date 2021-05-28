@@ -7,6 +7,7 @@ import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
@@ -54,7 +55,6 @@ public class ConnectivityUpdater {
     }
 
     //Default for JUnit Testing
-    @SuppressWarnings("PMD.AvoidCatchingGenericException")
     synchronized void uploadAddresses(List<String> ips) {
         if (!hasIpsChanged(ips)) {
             return;
@@ -69,7 +69,7 @@ public class ConnectivityUpdater {
                 this.ipAddresses = ips;
                 logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
             }
-        } catch (RuntimeException e) {
+        } catch (SdkException e) {
             logger.atWarn().log("Failed to upload the IP addresses {}", e);
         }
     }
