@@ -61,11 +61,15 @@ public class ConnectivityUpdater {
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
                 .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
                 .collect(Collectors.toList());
-        UpdateConnectivityInfoResponse connectivityInfoResponse =
-                updateConnectivityInfo(connectivityInfoItems);
-        if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
-            this.ipAddresses = ips;
-            logger.atInfo().kv("IPs", ips).log("Uploading IP addresses");
+        try {
+            UpdateConnectivityInfoResponse connectivityInfoResponse =
+                    updateConnectivityInfo(connectivityInfoItems);
+            if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
+                this.ipAddresses = ips;
+                logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
+            }
+        } catch (RuntimeException e) {
+            logger.atWarn().log("Failed to upload the IP addresses");
         }
     }
 
