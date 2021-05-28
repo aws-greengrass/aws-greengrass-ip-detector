@@ -270,14 +270,14 @@
                                         <limit>
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.45</minimum>
+                                            <minimum>0.60</minimum>
                                             <!--TODO: Increase the coverage. Currently some of the service code is
                                             not testable.-->
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.20</minimum>
+                                            <minimum>0.60</minimum>
                                             <!--TODO: Increase the coverage. Currently some of the service code is
                                             not testable.-->
                                         </limit>
