@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.detector;
 
+import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detector.detector.IpDetector;
 import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
 import com.aws.greengrass.logging.api.Logger;
@@ -19,18 +20,28 @@ import javax.inject.Inject;
 public class IpDetectorManager {
     private final ConnectivityUpdater connectivityUpdater;
     private final IpDetector ipDetector;
+    private final Config config;
     private final Logger logger = LogManager.getLogger(IpDetectorManager.class);
 
+    /**
+     * Constructor.
+     *
+     * @param connectivityUpdater client to update connectivity information
+     * @param ipDetector utility to detect IP addresses
+     * @param config config for fetching the configuration values
+     */
     @Inject
-    public IpDetectorManager(ConnectivityUpdater connectivityUpdater, IpDetector ipDetector) {
+    public IpDetectorManager(ConnectivityUpdater connectivityUpdater, IpDetector ipDetector, Config config) {
         this.ipDetector = ipDetector;
         this.connectivityUpdater = connectivityUpdater;
+        this.config = config;
     }
 
     void updateIps() {
         List<InetAddress> ipAddresses = null;
         try {
-            ipAddresses = ipDetector.getAllIpAddresses();
+            ipAddresses = ipDetector.getAllIpAddresses(
+                    config.isIncludeIPv4LoopbackAddrs(), config.isIncludeIPv4LinkLocalAddrs());
             if (ipAddresses.isEmpty()) {
                 logger.atDebug().log("No valid ip Address found in ip detector");
                 return;

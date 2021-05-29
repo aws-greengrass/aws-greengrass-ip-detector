@@ -18,14 +18,20 @@ public class IpDetector {
 
     /**
      * Fetches the device ip address.
+     * @param includeIPv4LoopbackAddrs whether to include IPv4 Loopback Addresses
+     * @param includeIPv4LinkLocalAddrs whether to include IPv4 Link Local Addresses
      * @throws SocketException SocketException
      */
-    public List<InetAddress> getAllIpAddresses() throws SocketException {
-        return getIpAddresses(NetworkInterface.getNetworkInterfaces());
+    public List<InetAddress> getAllIpAddresses(boolean includeIPv4LoopbackAddrs,
+                                               boolean includeIPv4LinkLocalAddrs) throws SocketException {
+        return getIpAddresses(
+                NetworkInterface.getNetworkInterfaces(), includeIPv4LoopbackAddrs, includeIPv4LinkLocalAddrs);
     }
 
     //Default for JUnit Testing
-    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces) throws SocketException {
+    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces,
+                                     boolean includeIPv4LoopbackAddrs,
+                                     boolean includeIPv4LinkLocalAddrs) throws SocketException {
         List<InetAddress> ipAddresses = new ArrayList<>();
         if (interfaces == null) {
             return ipAddresses;
@@ -40,6 +46,12 @@ public class IpDetector {
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress address = interfaceAddress.getAddress();
                 if (address instanceof Inet6Address) {
+                    continue;
+                }
+                if (address.isLoopbackAddress() && !includeIPv4LoopbackAddrs) {
+                    continue;
+                }
+                if (address.isLinkLocalAddress() && !includeIPv4LinkLocalAddrs) {
                     continue;
                 }
                 ipAddresses.add(address);

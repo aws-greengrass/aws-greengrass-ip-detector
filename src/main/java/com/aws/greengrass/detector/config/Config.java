@@ -11,12 +11,21 @@ public class Config {
     @Getter
     private int mqttPort;
 
+    @Getter
+    private boolean includeIPv4LoopbackAddrs;
+
+    @Getter
+    private boolean includeIPv4LinkLocalAddrs;
+
     /**
      * Config constructor.
      */
     public Config() {
         // Hardcoding for now till MQTT Broker is not publishing it.
         mqttPort = 8883;
+        // IPv4 Loopback addresses and Link-Local addresses are excluded by default
+        includeIPv4LoopbackAddrs = false;
+        includeIPv4LinkLocalAddrs = false;
     }
 }
 
