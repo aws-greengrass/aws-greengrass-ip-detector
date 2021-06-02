@@ -7,9 +7,12 @@ package com.aws.greengrass.detector.uploader;
 
 import com.aws.greengrass.deployment.DeviceConfiguration;
 import com.aws.greengrass.detector.config.Config;
+import com.aws.greengrass.logging.api.Logger;
+import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
@@ -24,6 +27,7 @@ public class ConnectivityUpdater {
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
     private List<String> ipAddresses;
+    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
 
     /**
      * Constructor.
@@ -60,10 +64,15 @@ public class ConnectivityUpdater {
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
                 .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
                 .collect(Collectors.toList());
-        UpdateConnectivityInfoResponse connectivityInfoResponse =
-                updateConnectivityInfo(connectivityInfoItems);
-        if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
-            this.ipAddresses = ips;
+        try {
+            UpdateConnectivityInfoResponse connectivityInfoResponse =
+                    updateConnectivityInfo(connectivityInfoItems);
+            if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
+                this.ipAddresses = ips;
+                logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
+            }
+        } catch (SdkException e) {
+            logger.atWarn().log("Failed to upload the IP addresses {}", e);
         }
     }
 

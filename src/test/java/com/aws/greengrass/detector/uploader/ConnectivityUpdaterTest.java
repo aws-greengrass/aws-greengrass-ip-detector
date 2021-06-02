@@ -22,7 +22,6 @@ import java.util.List;
 
 import static com.aws.greengrass.deployment.DeviceConfiguration.DEVICE_PARAM_THING_NAME;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -66,7 +65,7 @@ public class ConnectivityUpdaterTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_throws_THEN_throws() {
+    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_throws_THEN_passes() {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
