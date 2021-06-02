@@ -23,7 +23,6 @@ public class ConnectivityUpdater {
 
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
-    private final Config config;
     private List<String> ipAddresses;
 
     /**
@@ -31,32 +30,30 @@ public class ConnectivityUpdater {
      *
      * @param deviceConfiguration client to get the device details
      * @param clientFactory factory to get data plane client
-     * @param config config for fetching the configuration values
      */
     @Inject
-    public ConnectivityUpdater(DeviceConfiguration deviceConfiguration,
-                               GreengrassServiceClientFactory clientFactory, Config config) {
+    public ConnectivityUpdater(DeviceConfiguration deviceConfiguration, GreengrassServiceClientFactory clientFactory) {
         this.deviceConfiguration = deviceConfiguration;
         this.clientFactory = clientFactory;
-        this.config = config;
     }
 
     /**
      * Send ip address updates.
      *
      * @param ipAddresses list of ipAddresses
+     * @param config Configuration values
      */
-    public void updateIpAddresses(List<InetAddress> ipAddresses) {
+    public void updateIpAddresses(List<InetAddress> ipAddresses, Config config) {
         if (ipAddresses == null || ipAddresses.isEmpty()) {
             return;
         }
         List<String> ips = ipAddresses.stream().filter(ip -> ip != null && ip.getHostAddress() != null)
                 .map(ip -> ip.getHostAddress()).collect(Collectors.toList());
-        uploadAddresses(ips);
+        uploadAddresses(ips, config);
     }
 
     //Default for JUnit Testing
-    synchronized void uploadAddresses(List<String> ips) {
+    synchronized void uploadAddresses(List<String> ips, Config config) {
         if (!hasIpsChanged(ips)) {
             return;
         }

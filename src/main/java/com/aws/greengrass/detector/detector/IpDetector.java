@@ -5,6 +5,8 @@
 
 package com.aws.greengrass.detector.detector;
 
+import com.aws.greengrass.detector.config.Config;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -18,20 +20,17 @@ public class IpDetector {
 
     /**
      * Fetches the device ip address.
-     * @param includeIPv4LoopbackAddrs whether to include IPv4 Loopback Addresses
-     * @param includeIPv4LinkLocalAddrs whether to include IPv4 Link Local Addresses
+     *
+     * @param config Configuration
+     * @return list of IP Addresses
      * @throws SocketException SocketException
      */
-    public List<InetAddress> getAllIpAddresses(boolean includeIPv4LoopbackAddrs,
-                                               boolean includeIPv4LinkLocalAddrs) throws SocketException {
-        return getIpAddresses(
-                NetworkInterface.getNetworkInterfaces(), includeIPv4LoopbackAddrs, includeIPv4LinkLocalAddrs);
+    public List<InetAddress> getAllIpAddresses(Config config) throws SocketException {
+        return getIpAddresses(NetworkInterface.getNetworkInterfaces(), config);
     }
 
     //Default for JUnit Testing
-    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces,
-                                     boolean includeIPv4LoopbackAddrs,
-                                     boolean includeIPv4LinkLocalAddrs) throws SocketException {
+    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces, Config config) throws SocketException {
         List<InetAddress> ipAddresses = new ArrayList<>();
         if (interfaces == null) {
             return ipAddresses;
@@ -48,10 +47,10 @@ public class IpDetector {
                 if (address instanceof Inet6Address) {
                     continue;
                 }
-                if (address.isLoopbackAddress() && !includeIPv4LoopbackAddrs) {
+                if (address.isLoopbackAddress() && !config.isIncludeIPv4LoopbackAddrs()) {
                     continue;
                 }
-                if (address.isLinkLocalAddress() && !includeIPv4LinkLocalAddrs) {
+                if (address.isLinkLocalAddress() && !config.isIncludeIPv4LinkLocalAddrs()) {
                     continue;
                 }
                 ipAddresses.add(address);

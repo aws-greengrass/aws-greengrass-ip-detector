@@ -8,6 +8,7 @@ package com.aws.greengrass.detector;
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.ImplementsService;
 import com.aws.greengrass.dependency.State;
+import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.lifecyclemanager.PluginService;
 
 import java.util.concurrent.Future;
@@ -46,8 +47,9 @@ public class IpDetectorService extends PluginService {
      */
     @Override
     public void startup() throws InterruptedException {
+        Config config = new Config(this.config);
         this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
-            ipDetectorManager.startIpDetection();
+            ipDetectorManager.startIpDetection(config);
         }, 0, 60, TimeUnit.SECONDS);
         reportState(State.RUNNING);
     }

@@ -38,9 +38,6 @@ public class ConnectivityUpdaterTest {
     private GreengrassServiceClientFactory clientFactory;
 
     @Mock
-    private Config mockConfig;
-
-    @Mock
     private DeviceConfiguration deviceConfiguration;
 
     @Mock
@@ -58,12 +55,12 @@ public class ConnectivityUpdaterTest {
     public void GIVEN_ip_addresses_WHEN_updateIpAddresses_THEN_update_conn_called() {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
         Mockito.doReturn(UpdateConnectivityInfoResponse.builder().version("1").build())
                 .when(greengrassV2DataClient).updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class));
         List<String> ips = new ArrayList<>();
-        ips.add(TestConstants.IP_1);
-        connectivityUpdater.uploadAddresses(ips);
+        ips.add(TestConstants.IPV4_LOOPBACK);
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
         verify(greengrassV2DataClient, times(1))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
     }
@@ -72,19 +69,19 @@ public class ConnectivityUpdaterTest {
     public void GIVEN_ip_addresses_WHEN_updateIpAddresses_throws_THEN_throws() {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
         when(greengrassV2DataClient.updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class)))
                 .thenThrow(GreengrassV2DataException.builder().build());
         List<String> ips = new ArrayList<>();
-        ips.add(TestConstants.IP_1);
+        ips.add(TestConstants.IPV4_LOOPBACK);
         assertThrows(GreengrassV2DataException.class, () ->
-                connectivityUpdater.uploadAddresses(ips));
+                connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class)));
     }
 
     @Test
     public void GIVEN_ip_addresses_WHEN_updateIpAddresses_and_null_THEN_update_conn_not_called() {
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
-        connectivityUpdater.updateIpAddresses(null);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
+        connectivityUpdater.updateIpAddresses(null, Mockito.mock(Config.class));
         verify(greengrassV2DataClient, times(0))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
         verify(greengrassV2DataClient, times(0))
@@ -97,11 +94,11 @@ public class ConnectivityUpdaterTest {
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         Mockito.doReturn(UpdateConnectivityInfoResponse.builder().version("1").build())
                 .when(greengrassV2DataClient).updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class));
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory, mockConfig);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
         List<String> ips = new ArrayList<>();
-        ips.add(TestConstants.IP_1);
-        connectivityUpdater.uploadAddresses(ips);
-        connectivityUpdater.uploadAddresses(ips);
+        ips.add(TestConstants.IPV4_LOOPBACK);
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
 
         verify(greengrassV2DataClient, times(1))
                 .updateConnectivityInfo(any(UpdateConnectivityInfoRequest.class));
@@ -109,7 +106,7 @@ public class ConnectivityUpdaterTest {
 
     @Test
     public void GIVEN_ips_changed_WHEN_get_ip_addresses_THEN_return_true() {
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null, null);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null);
 
         // old ips null
         assertTrue(connectivityUpdater.hasIpsChanged(getIps()));
@@ -119,22 +116,22 @@ public class ConnectivityUpdaterTest {
 
     @Test
     public void GIVEN_ips_not_changed_WHEN_get_ip_addresses_THEN_return_false() {
-        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null, null);
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null);
         connectivityUpdater.setIpAddresses(getIps());
         assertFalse( connectivityUpdater.hasIpsChanged(getIps()));
     }
 
     private List<String> getIps() {
         List<String> ips = new ArrayList<>();
+        ips.add(TestConstants.IPV4_LOOPBACK);
         ips.add(TestConstants.IP_1);
-        ips.add(TestConstants.IP_2);
         return ips;
     }
 
     private List<String> getNewIps() {
         List<String> ips = new ArrayList<>();
-        ips.add(TestConstants.IP_1);
-        ips.add(TestConstants.IP_3);
+        ips.add(TestConstants.IPV4_LOOPBACK);
+        ips.add(TestConstants.IP_2);
         return ips;
     }
 }

@@ -20,7 +20,6 @@ import javax.inject.Inject;
 public class IpDetectorManager {
     private final ConnectivityUpdater connectivityUpdater;
     private final IpDetector ipDetector;
-    private final Config config;
     private final Logger logger = LogManager.getLogger(IpDetectorManager.class);
 
     /**
@@ -28,20 +27,17 @@ public class IpDetectorManager {
      *
      * @param connectivityUpdater client to update connectivity information
      * @param ipDetector utility to detect IP addresses
-     * @param config config for fetching the configuration values
      */
     @Inject
-    public IpDetectorManager(ConnectivityUpdater connectivityUpdater, IpDetector ipDetector, Config config) {
+    public IpDetectorManager(ConnectivityUpdater connectivityUpdater, IpDetector ipDetector) {
         this.ipDetector = ipDetector;
         this.connectivityUpdater = connectivityUpdater;
-        this.config = config;
     }
 
-    void updateIps() {
+    void updateIps(Config config) {
         List<InetAddress> ipAddresses = null;
         try {
-            ipAddresses = ipDetector.getAllIpAddresses(
-                    config.isIncludeIPv4LoopbackAddrs(), config.isIncludeIPv4LinkLocalAddrs());
+            ipAddresses = ipDetector.getAllIpAddresses(config);
             if (ipAddresses.isEmpty()) {
                 logger.atDebug().log("No valid ip Address found in ip detector");
                 return;
@@ -50,15 +46,17 @@ public class IpDetectorManager {
             logger.atError().log("IP Detector socket exception {}", e);
             return;
         }
-        connectivityUpdater.updateIpAddresses(ipAddresses);
+        connectivityUpdater.updateIpAddresses(ipAddresses, config);
     }
 
     /**
      * Start getting the ip addresses of the device and see if there are any changes.
+     *
+     * @param config Configuration
      */
-    public void startIpDetection() {
+    public void startIpDetection(Config config) {
         try {
-            updateIps();
+            updateIps(config);
         } catch (Exception e) {
             logger.atError().log("Exception occured in updating ip addresses {}", e);
         }

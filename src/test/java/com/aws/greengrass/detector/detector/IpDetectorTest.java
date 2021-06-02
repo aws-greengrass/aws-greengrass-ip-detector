@@ -1,5 +1,6 @@
 package com.aws.greengrass.detector.detector;
 
+import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.utils.TestConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,49 +29,55 @@ class IpDetectorTest {
     @Test
     public void GIVEN_validIps_WHEN_get_ipAddresses_THEN_ip_addresses_returned() throws SocketException {
         NetworkInterface networkInterface1 = Mockito.mock(NetworkInterface.class);
+        Config config = Mockito.mock(Config.class);
 
         List<NetworkInterface> networkInterfaces = new ArrayList<>();
         List<InterfaceAddress> interfaceAddresses = getAllAddresses();
 
         Mockito.doReturn(interfaceAddresses).when(networkInterface1).getInterfaceAddresses();
         Mockito.doReturn(true).when(networkInterface1).isUp();
+        // include IPv4 Loopback addresses and Link-Local addresses
+        Mockito.doReturn(true).when(config).isIncludeIPv4LoopbackAddrs();
+        Mockito.doReturn(true).when(config).isIncludeIPv4LinkLocalAddrs();
 
         networkInterfaces.add(networkInterface1);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        // include IPv4 Loopback addresses and Link-Local addresses
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, true, true);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, config);
 
         assertEquals(3, ipAddresses.size());
-        assertEquals(TestConstants.IP_1, ipAddresses.get(0).getHostAddress());
-        assertEquals(TestConstants.IP_2, ipAddresses.get(1).getHostAddress());
-        assertEquals(TestConstants.IP_6, ipAddresses.get(2).getHostAddress());
+        assertEquals(TestConstants.IPV4_LOOPBACK, ipAddresses.get(0).getHostAddress());
+        assertEquals(TestConstants.IP_1, ipAddresses.get(1).getHostAddress());
+        assertEquals(TestConstants.IPV4_LINK_LOCAL, ipAddresses.get(2).getHostAddress());
     }
 
     @Test
     public void GIVEN_loopbackAddress_linkLocalAddress_WHEN_get_ipAddresses_THEN_loopbackAddress_linkLocalAddress_filtered() throws SocketException {
         NetworkInterface networkInterface = Mockito.mock(NetworkInterface.class);
+        Config config = Mockito.mock(Config.class);
 
         List<NetworkInterface> networkInterfaces = new ArrayList<>();
         List<InterfaceAddress> interfaceAddresses = getAllAddresses();
 
         Mockito.doReturn(interfaceAddresses).when(networkInterface).getInterfaceAddresses();
         Mockito.doReturn(true).when(networkInterface).isUp();
+        // Exclude IPv4 Loopback addresses and Link-Local addresses
+        Mockito.doReturn(false).when(config).isIncludeIPv4LoopbackAddrs();
+        Mockito.doReturn(false).when(config).isIncludeIPv4LinkLocalAddrs();
 
         networkInterfaces.add(networkInterface);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, config);
 
-        // exclude IPv4 Loopback addresses and Link-Local addresses
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, false, false);
         assertEquals(1, ipAddresses.size());
-        assertEquals(TestConstants.IP_2, ipAddresses.get(0).getHostAddress());
+        assertEquals(TestConstants.IP_1, ipAddresses.get(0).getHostAddress());
     }
 
     @Test
     public void GIVEN_noIps_WHEN_get_ipAddresses_THEN_null_returned() throws SocketException {
         ipDetector = new IpDetector();
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(null, true, true);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(null, Mockito.mock(Config.class));
         assertEquals(0, ipAddresses.size());
     }
 
@@ -82,7 +89,7 @@ class IpDetectorTest {
         networkInterfaces.add(networkInterface1);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
         ipDetector = new IpDetector();
-        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, true, true);
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, Mockito.mock(Config.class));
         assertTrue(ipAddresses.isEmpty());
     }
 
@@ -102,12 +109,12 @@ class IpDetectorTest {
         InetAddress inetAddress5 = Mockito.mock(Inet6Address.class);
         InetAddress inetAddress6 = Mockito.mock(Inet4Address.class);
 
-        Mockito.lenient().doReturn(TestConstants.IP_1).when(inetAddress1).getHostAddress();
-        Mockito.doReturn(TestConstants.IP_2).when(inetAddress2).getHostAddress();
-        Mockito.lenient().doReturn(TestConstants.IP_3).when(inetAddress3).getHostAddress();
-        Mockito.lenient().doReturn(TestConstants.IP_4).when(inetAddress4).getHostAddress();
-        Mockito.lenient().doReturn(TestConstants.IP_5).when(inetAddress5).getHostAddress();
-        Mockito.lenient().doReturn(TestConstants.IP_6).when(inetAddress6).getHostAddress();
+        Mockito.lenient().doReturn(TestConstants.IPV4_LOOPBACK).when(inetAddress1).getHostAddress();
+        Mockito.doReturn(TestConstants.IP_1).when(inetAddress2).getHostAddress();
+        Mockito.lenient().doReturn(TestConstants.IP_2).when(inetAddress3).getHostAddress();
+        Mockito.lenient().doReturn(TestConstants.IP_3).when(inetAddress4).getHostAddress();
+        Mockito.lenient().doReturn(TestConstants.IP_4).when(inetAddress5).getHostAddress();
+        Mockito.lenient().doReturn(TestConstants.IPV4_LINK_LOCAL).when(inetAddress6).getHostAddress();
 
         Mockito.doReturn(true).when(inetAddress1).isLoopbackAddress();
         Mockito.doReturn(true).when(inetAddress6).isLinkLocalAddress();
