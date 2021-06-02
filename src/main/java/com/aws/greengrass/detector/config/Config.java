@@ -13,15 +13,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Config {
-    private AtomicInteger mqttPort;
-    private AtomicBoolean includeIPv4LoopbackAddrs;
-    private AtomicBoolean includeIPv4LinkLocalAddrs;
-
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
     static final int DEFAULT_MQTT_PORT = 8883;
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
+
+    private AtomicInteger mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
+    private AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+    private AtomicBoolean includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
 
     /**
      * Config constructor.

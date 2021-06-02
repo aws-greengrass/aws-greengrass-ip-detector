@@ -23,7 +23,7 @@ public class IpDetectorService extends PluginService {
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private Future<?> future;
-    private Config ipDetectorConfig;
+    private final Config ipDetectorConfig;
 
     /**
      * Constructor.
@@ -39,6 +39,7 @@ public class IpDetectorService extends PluginService {
         super(topics);
         this.ipDetectorManager = ipDetectorManager;
         this.scheduledExecutorService = scheduledExecutorService;
+        this.ipDetectorConfig = new Config(this.config);
     }
 
     /**
@@ -48,7 +49,6 @@ public class IpDetectorService extends PluginService {
      */
     @Override
     public void startup() throws InterruptedException {
-        this.ipDetectorConfig = new Config(this.config);
         this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
