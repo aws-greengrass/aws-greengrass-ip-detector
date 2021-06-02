@@ -73,8 +73,7 @@ public class ConnectivityUpdaterTest {
                 .thenThrow(GreengrassV2DataException.builder().build());
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IPV4_LOOPBACK);
-        assertThrows(GreengrassV2DataException.class, () ->
-                connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class)));
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
     }
 
     @Test
