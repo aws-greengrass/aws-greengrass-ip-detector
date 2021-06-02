@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import java.net.SocketException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -21,7 +19,7 @@ class ConfigTest {
     Config config;
 
     @Test
-    public void GIVEN_config_topics_WHEN_initialize_THEN_configuration_created() throws SocketException {
+    public void GIVEN_config_topics_WHEN_initialize_THEN_configuration_created() {
         Topics topics = Mockito.mock(Topics.class);
         Topics configTopics = Mockito.mock(Topics.class);
         String mockIncludeIPv4LoopbackAddrsConfig = "true";
@@ -50,7 +48,7 @@ class ConfigTest {
     }
 
     @Test
-    public void GIVEN_empty_config_topics_WHEN_initialize_THEN_default_configuration_created() throws SocketException {
+    public void GIVEN_empty_config_topics_WHEN_initialize_THEN_default_configuration_created() {
         Topics topics = Mockito.mock(Topics.class);
         Topics configTopics = Mockito.mock(Topics.class);
 
