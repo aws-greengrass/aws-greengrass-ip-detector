@@ -5,6 +5,8 @@
 
 package com.aws.greengrass.detector.detector;
 
+import com.aws.greengrass.detector.config.Config;
+
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -18,14 +20,17 @@ public class IpDetector {
 
     /**
      * Fetches the device ip address.
+     *
+     * @param config Configuration
+     * @return list of IP Addresses
      * @throws SocketException SocketException
      */
-    public List<InetAddress> getAllIpAddresses() throws SocketException {
-        return getIpAddresses(NetworkInterface.getNetworkInterfaces());
+    public List<InetAddress> getAllIpAddresses(Config config) throws SocketException {
+        return getIpAddresses(NetworkInterface.getNetworkInterfaces(), config);
     }
 
     //Default for JUnit Testing
-    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces) throws SocketException {
+    List<InetAddress> getIpAddresses(Enumeration<NetworkInterface> interfaces, Config config) throws SocketException {
         List<InetAddress> ipAddresses = new ArrayList<>();
         if (interfaces == null) {
             return ipAddresses;
@@ -40,6 +45,12 @@ public class IpDetector {
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress address = interfaceAddress.getAddress();
                 if (address instanceof Inet6Address) {
+                    continue;
+                }
+                if (address.isLoopbackAddress() && !config.isIncludeIPv4LoopbackAddrs()) {
+                    continue;
+                }
+                if (address.isLinkLocalAddress() && !config.isIncludeIPv4LinkLocalAddrs()) {
                     continue;
                 }
                 ipAddresses.add(address);

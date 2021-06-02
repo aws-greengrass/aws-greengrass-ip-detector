@@ -1,5 +1,6 @@
 package com.aws.greengrass.detector;
 
+import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detector.detector.IpDetector;
 import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,8 @@ public class IpDetectorManagerTest {
     private ConnectivityUpdater connectivityUpdater;
     @Mock
     private IpDetector ipDetector;
+    @Mock
+    private Config config;
 
     IpDetectorManager ipDetectorManager;
 
@@ -33,16 +36,16 @@ public class IpDetectorManagerTest {
         ipDetectorManager = new IpDetectorManager(connectivityUpdater, ipDetector);
         List <InetAddress> ips = new ArrayList<>();
         ips.add(Mockito.mock(InetAddress.class));
-        when(ipDetector.getAllIpAddresses()).thenReturn(ips);
-        ipDetectorManager.updateIps();
-        verify(connectivityUpdater, times(1)).updateIpAddresses(ips);
+        when(ipDetector.getAllIpAddresses(any(Config.class))).thenReturn(ips);
+        ipDetectorManager.updateIps(config);
+        verify(connectivityUpdater, times(1)).updateIpAddresses(ips, config);
     }
 
     @Test
     public void GIVEN_ip_addresses_not_found_WHEN_initialize_THEN_upload_called() throws SocketException {
         ipDetectorManager = new IpDetectorManager(connectivityUpdater, ipDetector);
-        when(ipDetector.getAllIpAddresses()).thenReturn(new ArrayList<>());
-        ipDetectorManager.updateIps();
-        verify(connectivityUpdater, times(0)).updateIpAddresses(any());
+        when(ipDetector.getAllIpAddresses(any(Config.class))).thenReturn(new ArrayList<>());
+        ipDetectorManager.updateIps(config);
+        verify(connectivityUpdater, times(0)).updateIpAddresses(any(), any());
     }
 }
