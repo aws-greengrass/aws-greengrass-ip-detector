@@ -72,7 +72,9 @@ public class ConnectivityUpdater {
                 logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
             }
         } catch (SdkException e) {
-            logger.atWarn().log("Failed to upload the IP addresses {}", e);
+            logger.atWarn()
+                    .log("Failed to upload the IP addresses {}. Check that the core device's IoT policy grants the "
+                            + "greengrass:UpdateConnectivityInfo permission.", e);
         }
     }
 

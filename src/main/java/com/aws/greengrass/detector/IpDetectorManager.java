@@ -39,11 +39,11 @@ public class IpDetectorManager {
         try {
             ipAddresses = ipDetector.getAllIpAddresses(config);
             if (ipAddresses.isEmpty()) {
-                logger.atDebug().log("No valid ip Address found in ip detector");
+                logger.atDebug().log("No valid IP address found");
                 return;
             }
         } catch (SocketException e) {
-            logger.atError().log("IP Detector socket exception {}", e);
+            logger.atError().log("Encountered a socket exception {}", e);
             return;
         }
         connectivityUpdater.updateIpAddresses(ipAddresses, config);
@@ -58,7 +58,7 @@ public class IpDetectorManager {
         try {
             updateIps(config);
         } catch (Exception e) {
-            logger.atError().log("Exception occured in updating ip addresses {}", e);
+            logger.atError().log("Exception occurred when updating IP addresses {}", e);
         }
     }
 }
