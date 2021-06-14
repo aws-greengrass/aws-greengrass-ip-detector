@@ -12,6 +12,7 @@ import com.aws.greengrass.util.Coerce;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("PMD.DataClass")
 public class Config {
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
@@ -75,6 +76,10 @@ public class Config {
      */
     public int getMqttPort() {
         return this.mqttPort.get();
+    }
+
+    public void setMqttPort(int mqttPort) {
+        this.mqttPort.set(mqttPort);
     }
 }
 

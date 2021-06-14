@@ -26,8 +26,10 @@ public class ConnectivityUpdater {
 
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
-    private List<String> ipAddresses;
     private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
+
+    private List<String> ipAddresses;
+    private int port;
 
     /**
      * Constructor.
@@ -56,13 +58,13 @@ public class ConnectivityUpdater {
         uploadAddresses(ips, config);
     }
 
-    //Default for JUnit Testing
     synchronized void uploadAddresses(List<String> ips, Config config) {
-        if (!hasIpsChanged(ips)) {
+        int port = config.getMqttPort();
+        if (!hasIpsOrPortChanged(ips, port)) {
             return;
         }
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
-                .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
+                .hostAddress(ip).metadata("").id(ip).portNumber(port).build())
                 .collect(Collectors.toList());
         try {
             UpdateConnectivityInfoResponse connectivityInfoResponse =
@@ -79,10 +81,10 @@ public class ConnectivityUpdater {
     }
 
     //Default for JUnit Testing
-    boolean hasIpsChanged(@NonNull List<String> ips) {
+    boolean hasIpsOrPortChanged(@NonNull List<String> ips, int port) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
+        } else if (this.port == port && this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
             return false;
         }
         return true;
@@ -101,7 +103,8 @@ public class ConnectivityUpdater {
     }
 
     //For Junit Testing
-    void setIpAddresses(List<String> ipAddresses) {
+    void setIpAddressesAndPort(List<String> ipAddresses, int port) {
         this.ipAddresses = ipAddresses;
+        this.port = port;
     }
 }
