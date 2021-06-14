@@ -116,7 +116,7 @@ public class ConnectivityUpdaterTest {
     public void GIVEN_ips_and_port_not_changed_WHEN_has_ips_or_port_changed_THEN_return_false() {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null);
         connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
-        assertFalse( connectivityUpdater.hasIpsOrPortChanged(getIps(), TestConstants.PORT_1));
+        assertFalse(connectivityUpdater.hasIpsOrPortChanged(getIps(), TestConstants.PORT_1));
     }
 
     @Test
