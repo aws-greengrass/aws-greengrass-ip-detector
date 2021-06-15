@@ -71,7 +71,8 @@ public class ConnectivityUpdater {
                     updateConnectivityInfo(connectivityInfoItems);
             if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
                 this.ipAddresses = ips;
-                logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
+                this.port = port;
+                logger.atInfo().kv("IPs", ips).kv("port", port).log("Uploaded IP addresses");
             }
         } catch (SdkException e) {
             logger.atWarn()
