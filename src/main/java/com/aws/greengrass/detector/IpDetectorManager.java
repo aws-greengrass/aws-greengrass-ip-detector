@@ -43,7 +43,7 @@ public class IpDetectorManager {
                 return;
             }
         } catch (SocketException e) {
-            logger.atError().log("Encountered a socket exception {}", e);
+            logger.atError().log("Encountered a socket exception while listing IP addresses", e);
             return;
         }
         connectivityUpdater.updateIpAddresses(ipAddresses, config);
@@ -58,7 +58,7 @@ public class IpDetectorManager {
         try {
             updateIps(config);
         } catch (Exception e) {
-            logger.atError().log("Exception occurred when updating IP addresses {}", e);
+            logger.atError().log("Exception occurred when updating IP addresses", e);
         }
     }
 }

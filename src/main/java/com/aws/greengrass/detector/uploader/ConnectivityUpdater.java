@@ -76,7 +76,7 @@ public class ConnectivityUpdater {
             }
         } catch (SdkException e) {
             logger.atWarn()
-                    .log("Failed to upload the IP addresses {}. Check that the core device's IoT policy grants the "
+                    .log("Failed to upload the IP addresses. Check that the core device's IoT policy grants the "
                             + "greengrass:UpdateConnectivityInfo permission.", e);
         }
     }
