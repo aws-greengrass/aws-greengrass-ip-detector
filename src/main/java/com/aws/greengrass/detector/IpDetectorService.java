@@ -33,7 +33,7 @@ public class IpDetectorService extends PluginService {
     private final Config ipDetectorConfig;
     private Future<?> future;
     private final Kernel kernel;
-    private Topic portConfigTopic;
+    private Topic moquettePortConfig;
 
     /**
      * Constructor.
@@ -54,34 +54,30 @@ public class IpDetectorService extends PluginService {
         this.ipDetectorConfig = new Config(this.config);
     }
 
-    @Override
-    public synchronized void install() {
-        try {
-            portConfigTopic = kernel.locate(MQTTService.SERVICE_NAME).getConfig()
-                    .find(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, MOQUETTE, IP_DETECTOR_PORT);
-            if (portConfigTopic != null) {
-                portConfigTopic.subscribe((whatHappened, node) -> {
-                    Integer port = Coerce.toInt(portConfigTopic);
-                    if (port != null) {
-                        this.ipDetectorConfig.setMqttPort(port);
-                        logger.atInfo().log("Ip Detector port changed to " + port);
-                    }
-                    if (inState(State.RUNNING)) {
-                        ipDetectorManager.updateIps(ipDetectorConfig);
-                    }
-                });
-            }
-        } catch (ServiceLoadException e) {
-            logger.atWarn().log("Exception in fetching the port config falling back to default port 8883");
-        }
-    }
-
     /**
      * Start IP Detection service.
      */
     @Override
     public synchronized void startup() {
         this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+            if (moquettePortConfig == null) {
+                try {
+                    moquettePortConfig = kernel.locate(MQTTService.SERVICE_NAME).getConfig()
+                            .find(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, MOQUETTE, IP_DETECTOR_PORT);
+                    logger.atInfo().log("Successfully loaded Moquette service configuration");
+
+                    moquettePortConfig.subscribe((whatHappened, node) -> {
+                        Integer port = Coerce.toInt(moquettePortConfig);
+                        if (port != null) {
+                            ipDetectorConfig.setMqttPort(port);
+                            logger.atInfo().kv("port", port).log("MQTT broker configuration updated");
+                        }
+                        ipDetectorManager.updateIps(ipDetectorConfig);
+                    });
+                } catch (ServiceLoadException e) {
+                    logger.atDebug().log("Failed to load Moquette service, falling back to default port");
+                }
+            }
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
         reportState(State.RUNNING);
