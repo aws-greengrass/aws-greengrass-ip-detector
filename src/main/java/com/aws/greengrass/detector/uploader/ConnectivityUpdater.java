@@ -26,10 +26,8 @@ public class ConnectivityUpdater {
 
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
-    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
-
     private List<String> ipAddresses;
-    private int port;
+    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
 
     /**
      * Constructor.
@@ -58,21 +56,20 @@ public class ConnectivityUpdater {
         uploadAddresses(ips, config);
     }
 
+    //Default for JUnit Testing
     synchronized void uploadAddresses(List<String> ips, Config config) {
-        int port = config.getMqttPort();
-        if (!hasIpsOrPortChanged(ips, port)) {
+        if (!hasIpsChanged(ips)) {
             return;
         }
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
-                .hostAddress(ip).metadata("").id(ip).portNumber(port).build())
+                .hostAddress(ip).metadata("").id(ip).portNumber(config.getMqttPort()).build())
                 .collect(Collectors.toList());
         try {
             UpdateConnectivityInfoResponse connectivityInfoResponse =
                     updateConnectivityInfo(connectivityInfoItems);
             if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
                 this.ipAddresses = ips;
-                this.port = port;
-                logger.atInfo().kv("IPs", ips).kv("port", port).log("Uploaded IP addresses");
+                logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
             }
         } catch (SdkException e) {
             logger.atWarn()
@@ -82,10 +79,10 @@ public class ConnectivityUpdater {
     }
 
     //Default for JUnit Testing
-    boolean hasIpsOrPortChanged(@NonNull List<String> ips, int port) {
+    boolean hasIpsChanged(@NonNull List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.port == port && this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
+        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
             return false;
         }
         return true;
@@ -104,8 +101,7 @@ public class ConnectivityUpdater {
     }
 
     //For Junit Testing
-    void setIpAddressesAndPort(List<String> ipAddresses, int port) {
+    void setIpAddresses(List<String> ipAddresses) {
         this.ipAddresses = ipAddresses;
-        this.port = port;
     }
 }
