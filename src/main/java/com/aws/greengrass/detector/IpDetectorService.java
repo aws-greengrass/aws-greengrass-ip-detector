@@ -14,7 +14,6 @@ import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.lifecyclemanager.Kernel;
 import com.aws.greengrass.lifecyclemanager.PluginService;
 import com.aws.greengrass.lifecyclemanager.exceptions.ServiceLoadException;
-import com.aws.greengrass.mqttbroker.MQTTService;
 import com.aws.greengrass.util.Coerce;
 
 import java.util.concurrent.Future;
@@ -26,14 +25,12 @@ import javax.inject.Inject;
 @ImplementsService(name = IpDetectorService.DETECTOR_SERVICE_NAME)
 public class IpDetectorService extends PluginService {
     public static final String DETECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
-    static final String MOQUETTE = "moquette";
-    static final String IP_DETECTOR_PORT = "port";
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private final Config ipDetectorConfig;
     private Future<?> future;
     private final Kernel kernel;
-    private Topic moquettePortConfig;
+    private Topic portConfig;
 
     /**
      * Constructor.
@@ -60,14 +57,16 @@ public class IpDetectorService extends PluginService {
     @Override
     public synchronized void startup() {
         this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (moquettePortConfig == null) {
+            if (portConfig == null) {
                 try {
-                    moquettePortConfig = kernel.locate(MQTTService.SERVICE_NAME).getConfig()
-                            .find(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, MOQUETTE, IP_DETECTOR_PORT);
+                    // TODO: MQTT port config should be read from a variant namespace. However,
+                    // for now we need to read directly from Moquette
+                    portConfig = kernel.locate("aws.greengrass.clientdevices.mqtt.Moquette").getConfig()
+                            .find(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, "moquette", "ssl_port");
                     logger.atInfo().log("Successfully loaded Moquette service configuration");
 
-                    moquettePortConfig.subscribe((whatHappened, node) -> {
-                        Integer port = Coerce.toInt(moquettePortConfig);
+                    portConfig.subscribe((whatHappened, node) -> {
+                        Integer port = Coerce.toInt(portConfig);
                         if (port != null) {
                             ipDetectorConfig.setMqttPort(port);
                             logger.atInfo().kv("port", port).log("MQTT broker configuration updated");
