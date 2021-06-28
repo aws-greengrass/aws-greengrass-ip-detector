@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.aws.greengrass.utils;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
@@ -12,7 +17,8 @@ public final class TestConstants {
     public static final String PROTOCOL = "https";
     public static final String THING_NAME = "thingName";
     public static final String PATH = "com/aws/greengrass/connectivityInfo/thing";
-    public static final int PORT = 8883;
+    public static final int PORT_1 = 8883;
+    public static final int PORT_2 = 8884;
 
     private TestConstants() {}
 }
