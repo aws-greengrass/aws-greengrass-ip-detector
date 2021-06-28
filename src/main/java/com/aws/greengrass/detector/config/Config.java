@@ -12,6 +12,7 @@ import com.aws.greengrass.util.Coerce;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("PMD.DataClass")
 public class Config {
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
@@ -19,9 +20,10 @@ public class Config {
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
 
-    private AtomicInteger mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
-    private AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
-    private AtomicBoolean includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+    private final AtomicInteger mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
+    private final AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+    private final AtomicBoolean includeIPv4LinkLocalAddrs =
+            new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
 
     /**
      * Config constructor.
@@ -30,27 +32,22 @@ public class Config {
      */
     public Config(Topics topics) {
         Topics configurationTopics = topics.lookupTopics(KernelConfigResolver.CONFIGURATION_CONFIG_KEY);
-        configurationTopics.subscribe((whatHappened, node) -> {
-            // Hardcoding port for now till MQTT Broker is not publishing it.
-            this.mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
+        if (configurationTopics != null) {
+            configurationTopics.subscribe((whatHappened, node) -> {
+                if (configurationTopics.isEmpty()) {
+                    this.includeIPv4LoopbackAddrs.set(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+                    this.includeIPv4LinkLocalAddrs.set(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+                    return;
+                }
 
-            if (configurationTopics.isEmpty()) {
-                this.includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
-                this.includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
-                return;
-            }
-
-            this.includeIPv4LoopbackAddrs = new AtomicBoolean(
-                    Coerce.toBoolean(
-                            configurationTopics.findOrDefault(
-                                    DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES,
-                                    INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY)));
-            this.includeIPv4LinkLocalAddrs = new AtomicBoolean(
-                    Coerce.toBoolean(
-                            configurationTopics.findOrDefault(
-                                    DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES,
-                                    INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY)));
-        });
+                this.includeIPv4LoopbackAddrs.set(Coerce.toBoolean(configurationTopics
+                        .findOrDefault(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES,
+                                INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY)));
+                this.includeIPv4LinkLocalAddrs.set(Coerce.toBoolean(configurationTopics
+                        .findOrDefault(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES,
+                                INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY)));
+            });
+        }
     }
 
     /**
@@ -75,6 +72,10 @@ public class Config {
      */
     public int getMqttPort() {
         return this.mqttPort.get();
+    }
+
+    public void setMqttPort(int mqttPort) {
+        this.mqttPort.set(mqttPort);
     }
 }
 
