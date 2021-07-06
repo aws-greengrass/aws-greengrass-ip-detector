@@ -7,7 +7,6 @@ package com.aws.greengrass.detector;
 
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.ImplementsService;
-import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.lifecyclemanager.PluginService;
 
