@@ -49,10 +49,11 @@ public class IpDetectorService extends PluginService {
      */
     @Override
     public void startup() throws InterruptedException {
+        logger.atInfo().log("Start IP detection task");
         this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
-        reportState(State.RUNNING);
+        super.startup();
     }
 
     /**
@@ -62,6 +63,7 @@ public class IpDetectorService extends PluginService {
      */
     @Override
     public void shutdown() throws InterruptedException {
+        logger.atInfo().log("Stop IP detection task");
         if (future != null) {
             future.cancel(true);
         }

@@ -38,8 +38,9 @@ public class IpDetectorManager {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses(config);
+            logger.atInfo().kv("IpAddresses", ipAddresses)
+                    .log("Acquired host IP addresses");
             if (ipAddresses.isEmpty()) {
-                logger.atDebug().log("No valid IP address found");
                 return;
             }
         } catch (SocketException e) {
