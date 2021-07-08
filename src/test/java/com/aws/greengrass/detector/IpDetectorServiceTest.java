@@ -64,8 +64,6 @@ public class IpDetectorServiceTest extends GGServiceTestUtil {
                 IpDetectorService.MOQUETTE, IpDetectorService.PORT)).thenReturn(portTopic);
 
         ipDetectorService.startup();
-        Thread.sleep(10000);
-
         verify(ipDetectorManager, times(1))
                 .updateIps(any(Config.class));
     }
@@ -90,8 +88,6 @@ public class IpDetectorServiceTest extends GGServiceTestUtil {
                 IpDetectorService.MOQUETTE, IpDetectorService.PORT)).thenReturn(null);
 
         ipDetectorService.startup();
-        Thread.sleep(10000);
-
         verify(ipDetectorManager, times(0))
                 .updateIps(any(Config.class));
     }

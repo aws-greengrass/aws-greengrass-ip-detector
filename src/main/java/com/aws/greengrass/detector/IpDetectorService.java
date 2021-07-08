@@ -89,9 +89,10 @@ public class IpDetectorService extends PluginService {
                 logger.atInfo().log("Successfully loaded Moquette service configuration");
                 if (portConfig != null) {
                     subscribeToMqttPortConfig();
+                    logger.atInfo().log("Successfully subscribed to Moquette port config");
                 }
             } catch (ServiceLoadException e) {
-                logger.atDebug().log("Failed to load Moquette service, falling back to default port");
+                logger.atInfo().log("Failed to load Moquette service, falling back to default port");
             }
         }
     }
