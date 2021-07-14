@@ -60,7 +60,7 @@ public class ConnectivityUpdater {
 
     synchronized void uploadAddresses(List<String> ips, Config config) {
         int port = config.getMqttPort();
-        if (!hasIpsOrPortChanged(ips, port)) {
+        if (!hasIpsChanged(ips) && !hasPortChanged(port)) {
             return;
         }
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
@@ -82,13 +82,18 @@ public class ConnectivityUpdater {
     }
 
     //Default for JUnit Testing
-    boolean hasIpsOrPortChanged(@NonNull List<String> ips, int port) {
+    boolean hasIpsChanged(@NonNull List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.port == port && this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
+        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
             return false;
         }
         return true;
+    }
+
+    //Default for JUnit Testing
+    boolean hasPortChanged(int port) {
+        return this.port != port;
     }
 
     private UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems) {

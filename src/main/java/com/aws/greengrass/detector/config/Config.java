@@ -7,6 +7,8 @@ package com.aws.greengrass.detector.config;
 
 import com.aws.greengrass.componentmanager.KernelConfigResolver;
 import com.aws.greengrass.config.Topics;
+import com.aws.greengrass.logging.api.Logger;
+import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,6 +24,7 @@ public class Config {
 
     private final AtomicInteger mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
     private final AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+    private final Logger logger;
     private final AtomicBoolean includeIPv4LinkLocalAddrs =
             new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
 
@@ -31,6 +34,7 @@ public class Config {
      * @param topics Root Configuration topic
      */
     public Config(Topics topics) {
+        this.logger = LogManager.getLogger(this.getClass()).createChild();
         Topics configurationTopics = topics.lookupTopics(KernelConfigResolver.CONFIGURATION_CONFIG_KEY);
         if (configurationTopics != null) {
             configurationTopics.subscribe((whatHappened, node) -> {
@@ -76,6 +80,7 @@ public class Config {
 
     public void setMqttPort(int mqttPort) {
         this.mqttPort.set(mqttPort);
+        logger.atInfo().kv("port", mqttPort).log("MQTT broker configuration updated");
     }
 }
 

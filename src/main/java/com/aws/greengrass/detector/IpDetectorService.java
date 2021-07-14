@@ -31,7 +31,7 @@ public class IpDetectorService extends PluginService {
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private final Config ipDetectorConfig;
-    private Future<?> future;
+    private Future<?> executorServiceFuture;
     private final Kernel kernel;
     private Topic portConfig;
 
@@ -58,8 +58,8 @@ public class IpDetectorService extends PluginService {
      * Start IP Detection service.
      */
     @Override
-    public synchronized void startup() {
-        this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+    public void startup() {
+        this.executorServiceFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
             subscribeToConfigs();
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
@@ -72,9 +72,9 @@ public class IpDetectorService extends PluginService {
      * @throws  InterruptedException if the thread interrupted
      */
     @Override
-    public synchronized void shutdown() throws InterruptedException {
-        if (future != null) {
-            future.cancel(true);
+    public void shutdown() throws InterruptedException {
+        if (executorServiceFuture != null) {
+            executorServiceFuture.cancel(true);
         }
         super.shutdown();
     }
@@ -102,9 +102,8 @@ public class IpDetectorService extends PluginService {
             Integer port = Coerce.toInt(portConfig);
             if (port != null) {
                 ipDetectorConfig.setMqttPort(port);
-                logger.atInfo().kv("port", port).log("MQTT broker configuration updated");
+                ipDetectorManager.updateIps(ipDetectorConfig);
             }
-            ipDetectorManager.updateIps(ipDetectorConfig);
         });
     }
 }
