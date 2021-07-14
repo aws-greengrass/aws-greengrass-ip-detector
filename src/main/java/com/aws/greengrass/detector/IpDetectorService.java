@@ -60,7 +60,7 @@ public class IpDetectorService extends PluginService {
     public void startup() throws InterruptedException {
         logger.atInfo().log("Start IP detection task");
         this.executorServiceFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
-			subscribeToConfigs();
+            subscribeToConfigs();
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
         super.startup();
