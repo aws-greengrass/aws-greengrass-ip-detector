@@ -44,12 +44,16 @@ public class Config {
                     return;
                 }
 
-                this.includeIPv4LoopbackAddrs.set(Coerce.toBoolean(configurationTopics
-                        .findOrDefault(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES,
-                                INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY)));
-                this.includeIPv4LinkLocalAddrs.set(Coerce.toBoolean(configurationTopics
-                        .findOrDefault(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES,
-                                INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY)));
+                boolean includeIp4LoopbackAddresses = Coerce.toBoolean(configurationTopics.findOrDefault(
+                        DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES, INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY));
+                boolean includeIp4LinkLocalAddresses = Coerce.toBoolean(configurationTopics.findOrDefault(
+                        DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES, INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY));
+                this.includeIPv4LoopbackAddrs.set(includeIp4LoopbackAddresses);
+                this.includeIPv4LinkLocalAddrs.set(includeIp4LinkLocalAddresses);
+
+                logger.atInfo().kv("includeIp4LoopbackAddresses", includeIp4LoopbackAddresses)
+                        .kv("includeIp4LoopbackAddresses", includeIp4LinkLocalAddresses)
+                        .log("Configuration updated");
             });
         }
     }
