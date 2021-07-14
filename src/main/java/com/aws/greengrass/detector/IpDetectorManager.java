@@ -38,12 +38,13 @@ public class IpDetectorManager {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses(config);
+            logger.atInfo().kv("IpAddresses", ipAddresses)
+                    .log("Acquired host IP addresses");
             if (ipAddresses.isEmpty()) {
-                logger.atDebug().log("No valid IP address found");
                 return;
             }
         } catch (SocketException e) {
-            logger.atError().log("Encountered a socket exception {}", e);
+            logger.atError().log("Encountered a socket exception while listing IP addresses", e);
             return;
         }
         connectivityUpdater.updateIpAddresses(ipAddresses, config);
@@ -58,7 +59,7 @@ public class IpDetectorManager {
         try {
             updateIps(config);
         } catch (Exception e) {
-            logger.atError().log("Exception occurred when updating IP addresses {}", e);
+            logger.atError().log("Exception occurred when updating IP addresses", e);
         }
     }
 }

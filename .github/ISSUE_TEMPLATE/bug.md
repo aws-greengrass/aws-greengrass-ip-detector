@@ -21,7 +21,7 @@ Tell us what actually happened.
  - OS: [e.g. Ubuntu 20.04]
  - JDK version:
  - Nucleus version:
- - Device Certificate Manager version:
+ - IP Detector version:
 
 **Additional context**
 Add any other context about the problem here.

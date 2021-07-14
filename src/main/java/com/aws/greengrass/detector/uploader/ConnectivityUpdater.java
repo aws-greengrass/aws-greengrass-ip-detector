@@ -54,7 +54,7 @@ public class ConnectivityUpdater {
             return;
         }
         List<String> ips = ipAddresses.stream().filter(ip -> ip != null && ip.getHostAddress() != null)
-                .map(ip -> ip.getHostAddress()).collect(Collectors.toList());
+                .map(InetAddress::getHostAddress).collect(Collectors.toList());
         uploadAddresses(ips, config);
     }
 
@@ -76,7 +76,7 @@ public class ConnectivityUpdater {
             }
         } catch (SdkException e) {
             logger.atWarn()
-                    .log("Failed to upload the IP addresses {}. Check that the core device's IoT policy grants the "
+                    .log("Failed to upload the IP addresses. Check that the core device's IoT policy grants the "
                             + "greengrass:UpdateConnectivityInfo permission.", e);
         }
     }
@@ -85,10 +85,9 @@ public class ConnectivityUpdater {
     boolean hasIpsChanged(@NonNull List<String> ips) {
         if (this.ipAddresses == null) {
             return true;
-        } else if (this.ipAddresses.size() == ips.size() && this.ipAddresses.containsAll(ips)) {
-            return false;
+        } else {
+            return this.ipAddresses.size() != ips.size() || !this.ipAddresses.containsAll(ips);
         }
-        return true;
     }
 
     //Default for JUnit Testing

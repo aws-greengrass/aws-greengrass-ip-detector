@@ -9,7 +9,6 @@ import com.aws.greengrass.componentmanager.KernelConfigResolver;
 import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.ImplementsService;
-import com.aws.greengrass.dependency.State;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.lifecyclemanager.Kernel;
 import com.aws.greengrass.lifecyclemanager.PluginService;
@@ -58,12 +57,13 @@ public class IpDetectorService extends PluginService {
      * Start IP Detection service.
      */
     @Override
-    public void startup() {
+    public void startup() throws InterruptedException {
+        logger.atInfo().log("Start IP detection task");
         this.executorServiceFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
-            subscribeToConfigs();
+			subscribeToConfigs();
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
-        reportState(State.RUNNING);
+        super.startup();
     }
 
     /**
@@ -73,6 +73,7 @@ public class IpDetectorService extends PluginService {
      */
     @Override
     public void shutdown() throws InterruptedException {
+        logger.atInfo().log("Stop IP detection task");
         if (executorServiceFuture != null) {
             executorServiceFuture.cancel(true);
         }
