@@ -12,7 +12,7 @@ import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
-import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
@@ -72,7 +72,7 @@ public class ConnectivityUpdater {
                 this.ipAddresses = ips;
                 logger.atInfo().kv("IPs", ips).log("Uploaded IP addresses");
             }
-        } catch (SdkException e) {
+        } catch (SdkClientException e) {
             Throwable cause = e.getCause();
 
             if (cause instanceof UnknownHostException) {
