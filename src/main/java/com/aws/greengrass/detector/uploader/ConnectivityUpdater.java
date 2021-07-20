@@ -76,7 +76,8 @@ public class ConnectivityUpdater {
             Throwable cause = e.getCause();
 
             if (cause instanceof UnknownHostException) {
-                // Let the user know if Internet connectivity is lost so they do not try to debug their IAM policies immediately
+                // Let the user know if Internet connectivity is lost so they do not try to debug their IAM policies
+                //   immediately
                 logger.atWarn()
                         .log("Failed to upload the IP addresses. An unknown host exception was thrown. "
                                 + "This may indicate that Internet connectivity has been lost.");
