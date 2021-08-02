@@ -10,9 +10,7 @@ import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.ImplementsService;
 import com.aws.greengrass.detector.config.Config;
-import com.aws.greengrass.lifecyclemanager.Kernel;
 import com.aws.greengrass.lifecyclemanager.PluginService;
-import com.aws.greengrass.lifecyclemanager.exceptions.ServiceLoadException;
 import com.aws.greengrass.util.Coerce;
 
 import java.util.concurrent.Future;
@@ -24,30 +22,25 @@ import javax.inject.Inject;
 @ImplementsService(name = IpDetectorService.DETECTOR_SERVICE_NAME)
 public class IpDetectorService extends PluginService {
     public static final String DETECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
-    static final String MOQUETTE_SERVICE_NAME = "aws.greengrass.clientdevices.mqtt.Moquette";
-    static final String MOQUETTE = "moquette";
     static final String PORT = "ssl_port";
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private final Config ipDetectorConfig;
     private Future<?> executorServiceFuture;
-    private final Kernel kernel;
     private Topic portConfig;
 
     /**
      * Constructor.
      *
-     * @param kernel greengrass kernel
      * @param topics  Root Configuration topic for this service
      * @param ipDetectorManager Ip detector
      * @param scheduledExecutorService schedule task for ip detection
      *
      */
     @Inject
-    public IpDetectorService(Kernel kernel, Topics topics, IpDetectorManager ipDetectorManager,
+    public IpDetectorService(Topics topics, IpDetectorManager ipDetectorManager,
                              ScheduledExecutorService scheduledExecutorService) {
         super(topics);
-        this.kernel = kernel;
         this.ipDetectorManager = ipDetectorManager;
         this.scheduledExecutorService = scheduledExecutorService;
         this.ipDetectorConfig = new Config(this.config);
@@ -82,18 +75,10 @@ public class IpDetectorService extends PluginService {
 
     private void subscribeToConfigs() {
         if (portConfig == null) {
-            try {
-                // TODO: MQTT port config should be read from a variant namespace. However,
-                // for now we need to read directly from Moquette
-                portConfig = kernel.locate(MOQUETTE_SERVICE_NAME).getConfig()
-                        .find(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, MOQUETTE, PORT);
-                logger.atInfo().log("Successfully loaded Moquette service configuration");
-                if (portConfig != null) {
-                    subscribeToMqttPortConfig();
-                    logger.atInfo().log("Successfully subscribed to Moquette port config");
-                }
-            } catch (ServiceLoadException e) {
-                logger.atInfo().log("Failed to load Moquette service, falling back to default port");
+            portConfig = this.config.lookup(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, PORT);
+            if (portConfig != null) {
+                subscribeToMqttPortConfig();
+                logger.atInfo().log("Successfully subscribed to new port config");
             }
         }
     }
