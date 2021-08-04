@@ -23,13 +23,12 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 public class ConnectivityUpdater {
+    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
 
     private final DeviceConfiguration deviceConfiguration;
     private final GreengrassServiceClientFactory clientFactory;
-    private final Logger logger = LogManager.getLogger(ConnectivityUpdater.class);
-
     private List<String> ipAddresses;
-    private int port;
+    private int defaultPort;
 
     /**
      * Constructor.
@@ -44,7 +43,7 @@ public class ConnectivityUpdater {
     }
 
     /**
-     * Send ip address updates.
+     * Upload IP addresses to cloud if they have changed.
      *
      * @param ipAddresses list of ipAddresses
      * @param config Configuration values
@@ -59,20 +58,20 @@ public class ConnectivityUpdater {
     }
 
     synchronized void uploadAddresses(List<String> ips, Config config) {
-        int port = config.getMqttPort();
-        if (!hasIpsChanged(ips) && !hasPortChanged(port)) {
+        int defaultPort = config.getDefaultPort();
+        if (!hasIpsChanged(ips) && defaultPort == this.defaultPort) {
             return;
         }
         List<ConnectivityInfo> connectivityInfoItems = ips.stream().map(ip -> ConnectivityInfo.builder()
-                .hostAddress(ip).metadata("").id(ip).portNumber(port).build())
+                .hostAddress(ip).metadata("").id(ip).portNumber(defaultPort).build())
                 .collect(Collectors.toList());
         try {
             UpdateConnectivityInfoResponse connectivityInfoResponse =
                     updateConnectivityInfo(connectivityInfoItems);
             if (connectivityInfoResponse != null && connectivityInfoResponse.version() != null) {
                 this.ipAddresses = ips;
-                this.port = port;
-                logger.atInfo().kv("IPs", ips).kv("port", port).log("Uploaded IP addresses");
+                this.defaultPort = defaultPort;
+                logger.atInfo().kv("IPs", ips).kv("defaultPort", defaultPort).log("Uploaded IP addresses");
             }
         } catch (SdkException e) {
             logger.atWarn()
@@ -92,7 +91,7 @@ public class ConnectivityUpdater {
 
     //Default for JUnit Testing
     boolean hasPortChanged(int port) {
-        return this.port != port;
+        return this.defaultPort != port;
     }
 
     private UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems) {
@@ -110,6 +109,6 @@ public class ConnectivityUpdater {
     //For Junit Testing
     void setIpAddressesAndPort(List<String> ipAddresses, int port) {
         this.ipAddresses = ipAddresses;
-        this.port = port;
+        this.defaultPort = port;
     }
 }

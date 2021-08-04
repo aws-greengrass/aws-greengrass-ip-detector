@@ -14,19 +14,19 @@ import com.aws.greengrass.util.Coerce;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@SuppressWarnings("PMD.DataClass")
 public class Config {
+    private final Logger logger = LogManager.getLogger(Config.class);
+
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
-    static final int DEFAULT_MQTT_PORT = 8883;
+    static final String DEFAULT_PORT_CONFIG_KEY = "defaultPort";
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
+    static final int DEFAULT_PORT = 8883;
 
-    private final AtomicInteger mqttPort = new AtomicInteger(DEFAULT_MQTT_PORT);
-    private final AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
-    private final Logger logger;
-    private final AtomicBoolean includeIPv4LinkLocalAddrs =
-            new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+    private AtomicInteger defaultPort = new AtomicInteger(DEFAULT_PORT);
+    private AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+    private AtomicBoolean includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
 
     /**
      * Config constructor.
@@ -34,28 +34,35 @@ public class Config {
      * @param topics Root Configuration topic
      */
     public Config(Topics topics) {
-        this.logger = LogManager.getLogger(this.getClass()).createChild();
         Topics configurationTopics = topics.lookupTopics(KernelConfigResolver.CONFIGURATION_CONFIG_KEY);
-        if (configurationTopics != null) {
-            configurationTopics.subscribe((whatHappened, node) -> {
-                if (configurationTopics.isEmpty()) {
-                    this.includeIPv4LoopbackAddrs.set(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
-                    this.includeIPv4LinkLocalAddrs.set(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
-                    return;
-                }
+        configurationTopics.subscribe((whatHappened, node) -> {
+            if (configurationTopics.isEmpty()) {
+                this.includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
+                this.includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+                this.defaultPort = new AtomicInteger(DEFAULT_PORT);
+                return;
+            }
 
-                boolean includeIp4LoopbackAddresses = Coerce.toBoolean(configurationTopics.findOrDefault(
-                        DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES, INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY));
-                boolean includeIp4LinkLocalAddresses = Coerce.toBoolean(configurationTopics.findOrDefault(
-                        DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES, INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY));
-                this.includeIPv4LoopbackAddrs.set(includeIp4LoopbackAddresses);
-                this.includeIPv4LinkLocalAddrs.set(includeIp4LinkLocalAddresses);
+            this.includeIPv4LoopbackAddrs = new AtomicBoolean(
+                    Coerce.toBoolean(
+                            configurationTopics.findOrDefault(
+                                    DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES,
+                                    INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY)));
+            this.includeIPv4LinkLocalAddrs = new AtomicBoolean(
+                    Coerce.toBoolean(
+                            configurationTopics.findOrDefault(
+                                    DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES,
+                                    INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY)));
+            this.defaultPort = new AtomicInteger(
+                    Coerce.toInt(
+                            configurationTopics.findOrDefault(DEFAULT_PORT,
+                                    DEFAULT_PORT_CONFIG_KEY)));
 
-                logger.atInfo().kv("includeIp4LoopbackAddresses", includeIp4LoopbackAddresses)
-                        .kv("includeIp4LoopbackAddresses", includeIp4LinkLocalAddresses)
-                        .log("Configuration updated");
-            });
-        }
+            logger.atInfo().kv("includeIPv4LoopbackAddrs", includeIPv4LoopbackAddrs.get())
+                    .kv("includeIPv4LinkLocalAddrs", includeIPv4LinkLocalAddrs.get())
+                    .kv("defaultPort", defaultPort.get())
+                    .log("Configuration updated");
+        });
     }
 
     /**
@@ -75,16 +82,11 @@ public class Config {
     }
 
     /**
-     * MQTT Port getter.
-     * @return integer MQTT Port
+     * defaultPort getter.
+     * @return integer defaultPort
      */
-    public int getMqttPort() {
-        return this.mqttPort.get();
-    }
-
-    public void setMqttPort(int mqttPort) {
-        this.mqttPort.set(mqttPort);
-        logger.atInfo().kv("port", mqttPort).log("MQTT broker configuration updated");
+    public int getDefaultPort() {
+        return this.defaultPort.get();
     }
 }
 

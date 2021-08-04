@@ -5,13 +5,10 @@
 
 package com.aws.greengrass.detector;
 
-import com.aws.greengrass.componentmanager.KernelConfigResolver;
-import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.dependency.ImplementsService;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.lifecyclemanager.PluginService;
-import com.aws.greengrass.util.Coerce;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,15 +16,13 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 
-@ImplementsService(name = IpDetectorService.DETECTOR_SERVICE_NAME)
+@ImplementsService(name = IpDetectorService.IP_DETECTOR_SERVICE_NAME)
 public class IpDetectorService extends PluginService {
-    public static final String DETECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
-    static final String PORT = "ssl_port";
+    public static final String IP_DETECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
+    private Future<?> future;
     private final Config ipDetectorConfig;
-    private Future<?> executorServiceFuture;
-    private Topic portConfig;
 
     /**
      * Constructor.
@@ -48,12 +43,13 @@ public class IpDetectorService extends PluginService {
 
     /**
      * Start IP Detection service.
+     *
+     * @throws  InterruptedException if the thread interrupted
      */
     @Override
     public void startup() throws InterruptedException {
         logger.atInfo().log("Start IP detection task");
-        this.executorServiceFuture = scheduledExecutorService.scheduleAtFixedRate(() -> {
-            subscribeToConfigs();
+        this.future = scheduledExecutorService.scheduleAtFixedRate(() -> {
             ipDetectorManager.startIpDetection(this.ipDetectorConfig);
         }, 0, 60, TimeUnit.SECONDS);
         super.startup();
@@ -67,29 +63,9 @@ public class IpDetectorService extends PluginService {
     @Override
     public void shutdown() throws InterruptedException {
         logger.atInfo().log("Stop IP detection task");
-        if (executorServiceFuture != null) {
-            executorServiceFuture.cancel(true);
+        if (future != null) {
+            future.cancel(true);
         }
         super.shutdown();
-    }
-
-    private void subscribeToConfigs() {
-        if (portConfig == null) {
-            portConfig = this.config.lookup(KernelConfigResolver.CONFIGURATION_CONFIG_KEY, PORT);
-            if (portConfig != null) {
-                subscribeToMqttPortConfig();
-                logger.atInfo().log("Successfully subscribed to new port config");
-            }
-        }
-    }
-
-    private void subscribeToMqttPortConfig() {
-        portConfig.subscribe((whatHappened, node) -> {
-            Integer port = Coerce.toInt(portConfig);
-            if (port != null) {
-                ipDetectorConfig.setMqttPort(port);
-                ipDetectorManager.updateIps(ipDetectorConfig);
-            }
-        });
     }
 }
