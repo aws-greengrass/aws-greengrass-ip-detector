@@ -16,9 +16,9 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 
-@ImplementsService(name = IpDetectorService.DECTECTOR_SERVICE_NAME)
+@ImplementsService(name = IpDetectorService.IP_DETECTOR_SERVICE_NAME)
 public class IpDetectorService extends PluginService {
-    public static final String DECTECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
+    public static final String IP_DETECTOR_SERVICE_NAME = "aws.greengrass.clientdevices.IPDetector";
     private final IpDetectorManager ipDetectorManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private Future<?> future;

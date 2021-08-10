@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.aws.greengrass.detector.uploader;
 
 import com.aws.greengrass.config.Topic;
@@ -108,15 +113,23 @@ public class ConnectivityUpdaterTest {
 
         // old ips null
         assertTrue(connectivityUpdater.hasIpsChanged(getIps()));
-        connectivityUpdater.setIpAddresses(getIps());
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
         assertTrue(connectivityUpdater.hasIpsChanged(getNewIps()));
     }
 
     @Test
-    public void GIVEN_ips_not_changed_WHEN_get_ip_addresses_THEN_return_false() {
+    public void GIVEN_ips_and_port_not_changed_WHEN_has_ips_or_port_changed_THEN_return_false() {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null);
-        connectivityUpdater.setIpAddresses(getIps());
-        assertFalse( connectivityUpdater.hasIpsChanged(getIps()));
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
+        assertFalse(connectivityUpdater.hasIpsChanged(getIps()));
+        assertFalse(connectivityUpdater.hasPortChanged(TestConstants.PORT_1));
+    }
+
+    @Test
+    public void GIVEN_port_changed_WHEN_has_ips_or_port_not_changed_THEN_return_true() {
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration,null);
+        connectivityUpdater.setIpAddressesAndPort(getIps(), TestConstants.PORT_1);
+        assertTrue(connectivityUpdater.hasPortChanged(TestConstants.PORT_2));
     }
 
     private List<String> getIps() {
