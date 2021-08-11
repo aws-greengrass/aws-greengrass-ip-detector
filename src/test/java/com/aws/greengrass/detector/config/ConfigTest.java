@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package com.aws.greengrass.detector.config;
 
 
@@ -11,7 +16,10 @@ import org.mockito.stubbing.Answer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 
 class ConfigTest {
@@ -24,6 +32,7 @@ class ConfigTest {
         Topics configTopics = Mockito.mock(Topics.class);
         String mockIncludeIPv4LoopbackAddrsConfig = "true";
         String mockIncludeIPv4LinkLocalAddrsConfig = "true";
+        int mockPortValue = 9000;
 
         // stub subscribe() to call just the callback method without adding watcher
         doAnswer((Answer<Void>) invocation -> {
@@ -34,17 +43,19 @@ class ConfigTest {
 
         Mockito.doReturn(false).when(configTopics).isEmpty();
         Mockito.doReturn(mockIncludeIPv4LoopbackAddrsConfig)
-                .when(configTopics).findOrDefault(false, Config.INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY);
+                .when(configTopics).findOrDefault(anyBoolean(), eq(Config.INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY));
         Mockito.doReturn(mockIncludeIPv4LinkLocalAddrsConfig)
-                .when(configTopics).findOrDefault(false, Config.INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY);
+                .when(configTopics).findOrDefault(anyBoolean(), eq(Config.INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY));
+        Mockito.doReturn(mockPortValue)
+                .when(configTopics).findOrDefault(anyInt(), eq(Config.DEFAULT_PORT_CONFIG_KEY));
 
         Mockito.doReturn(configTopics).when(topics).lookupTopics(anyString());
         config = new Config(topics);
 
         assertNotNull(config);
-        assertEquals(config.getMqttPort(), Config.DEFAULT_MQTT_PORT);
-        assertEquals(config.isIncludeIPv4LoopbackAddrs(), Coerce.toBoolean(mockIncludeIPv4LoopbackAddrsConfig));
-        assertEquals(config.isIncludeIPv4LinkLocalAddrs(), Coerce.toBoolean(mockIncludeIPv4LinkLocalAddrsConfig));
+        assertEquals(mockPortValue, config.getDefaultPort());
+        assertEquals(Coerce.toBoolean(mockIncludeIPv4LoopbackAddrsConfig), config.isIncludeIPv4LoopbackAddrs());
+        assertEquals(Coerce.toBoolean(mockIncludeIPv4LinkLocalAddrsConfig), config.isIncludeIPv4LinkLocalAddrs());
     }
 
     @Test
@@ -64,8 +75,8 @@ class ConfigTest {
         config = new Config(topics);
 
         assertNotNull(config);
-        assertEquals(config.getMqttPort(), Config.DEFAULT_MQTT_PORT);
-        assertEquals(config.isIncludeIPv4LoopbackAddrs(), Config.DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
-        assertEquals(config.isIncludeIPv4LinkLocalAddrs(), Config.DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+        assertEquals(Config.DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES, config.isIncludeIPv4LoopbackAddrs());
+        assertEquals(Config.DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES, config.isIncludeIPv4LinkLocalAddrs());
+        assertEquals(Config.DEFAULT_PORT, config.getDefaultPort());
     }
 }
