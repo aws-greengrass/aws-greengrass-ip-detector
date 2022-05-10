@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.detector;
 
+import com.aws.greengrass.deployment.exceptions.DeviceConfigurationException;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detector.detector.IpDetector;
 import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
@@ -37,7 +38,8 @@ public class IpDetectorManagerTest {
     IpDetectorManager ipDetectorManager;
 
     @Test
-    public void GIVEN_ip_addresses_found_WHEN_initialize_THEN_upload_called() throws SocketException {
+    public void GIVEN_ip_addresses_found_WHEN_initialize_THEN_upload_called()
+            throws SocketException, DeviceConfigurationException {
         ipDetectorManager = new IpDetectorManager(connectivityUpdater, ipDetector);
         List <InetAddress> ips = new ArrayList<>();
         ips.add(Mockito.mock(InetAddress.class));
@@ -47,7 +49,8 @@ public class IpDetectorManagerTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_not_found_WHEN_initialize_THEN_upload_called() throws SocketException {
+    public void GIVEN_ip_addresses_not_found_WHEN_initialize_THEN_upload_called()
+            throws SocketException, DeviceConfigurationException {
         ipDetectorManager = new IpDetectorManager(connectivityUpdater, ipDetector);
         when(ipDetector.getAllIpAddresses(any(Config.class))).thenReturn(new ArrayList<>());
         ipDetectorManager.updateIps(config);

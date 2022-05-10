@@ -5,6 +5,7 @@
 
 package com.aws.greengrass.detector;
 
+import com.aws.greengrass.deployment.exceptions.DeviceConfigurationException;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.detector.detector.IpDetector;
 import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
@@ -34,7 +35,7 @@ public class IpDetectorManager {
         this.connectivityUpdater = connectivityUpdater;
     }
 
-    void updateIps(Config config) {
+    void updateIps(Config config) throws DeviceConfigurationException {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses(config);

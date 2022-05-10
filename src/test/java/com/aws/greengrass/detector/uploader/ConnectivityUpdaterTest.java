@@ -8,6 +8,7 @@ package com.aws.greengrass.detector.uploader;
 import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.dependency.Context;
 import com.aws.greengrass.deployment.DeviceConfiguration;
+import com.aws.greengrass.deployment.exceptions.DeviceConfigurationException;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import com.aws.greengrass.utils.TestConstants;
@@ -56,7 +57,8 @@ public class ConnectivityUpdaterTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_THEN_update_conn_called() {
+    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_THEN_update_conn_called()
+            throws DeviceConfigurationException {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
@@ -70,7 +72,7 @@ public class ConnectivityUpdaterTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_throws_THEN_passes() {
+    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_throws_THEN_passes() throws DeviceConfigurationException {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
@@ -82,7 +84,8 @@ public class ConnectivityUpdaterTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_and_null_THEN_update_conn_not_called() {
+    public void GIVEN_ip_addresses_WHEN_updateIpAddresses_and_null_THEN_update_conn_not_called()
+            throws DeviceConfigurationException {
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
         connectivityUpdater.updateIpAddresses(null, Mockito.mock(Config.class));
         verify(greengrassV2DataClient, times(0))
@@ -92,7 +95,8 @@ public class ConnectivityUpdaterTest {
     }
 
     @Test
-    public void GIVEN_ip_addresses_WHEN_updateIpAddressesFails_THEN_ip_list_not_updated() {
+    public void GIVEN_ip_addresses_WHEN_updateIpAddressesFails_THEN_ip_list_not_updated()
+            throws DeviceConfigurationException {
         Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
         Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         Mockito.doReturn(UpdateConnectivityInfoResponse.builder().version("1").build())

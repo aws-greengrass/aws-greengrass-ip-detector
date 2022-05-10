@@ -6,6 +6,7 @@
 package com.aws.greengrass.detector.uploader;
 
 import com.aws.greengrass.deployment.DeviceConfiguration;
+import com.aws.greengrass.deployment.exceptions.DeviceConfigurationException;
 import com.aws.greengrass.detector.config.Config;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
@@ -13,6 +14,7 @@ import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
 import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.services.greengrassv2data.GreengrassV2DataClient;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
@@ -47,8 +49,9 @@ public class ConnectivityUpdater {
      *
      * @param ipAddresses list of ipAddresses
      * @param config Configuration values
+     * @throws DeviceConfigurationException when fails to get GreengrassV2DataClient
      */
-    public void updateIpAddresses(List<InetAddress> ipAddresses, Config config) {
+    public void updateIpAddresses(List<InetAddress> ipAddresses, Config config) throws DeviceConfigurationException {
         if (ipAddresses == null || ipAddresses.isEmpty()) {
             return;
         }
@@ -57,7 +60,7 @@ public class ConnectivityUpdater {
         uploadAddresses(ips, config);
     }
 
-    synchronized void uploadAddresses(List<String> ips, Config config) {
+    synchronized void uploadAddresses(List<String> ips, Config config) throws DeviceConfigurationException {
         int defaultPort = config.getDefaultPort();
         if (!hasIpsChanged(ips) && defaultPort == this.defaultPort) {
             return;
@@ -94,16 +97,26 @@ public class ConnectivityUpdater {
         return this.defaultPort != port;
     }
 
-    private UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems) {
+    private UpdateConnectivityInfoResponse updateConnectivityInfo(List<ConnectivityInfo> connectivityInfoItems)
+            throws DeviceConfigurationException {
         if (connectivityInfoItems == null || connectivityInfoItems.isEmpty()) {
             return null;
         }
 
-        UpdateConnectivityInfoRequest updateConnectivityInfoRequest =
-                UpdateConnectivityInfoRequest.builder().thingName(Coerce.toString(deviceConfiguration.getThingName()))
-                        .connectivityInfo(connectivityInfoItems).build();
+        try (GreengrassV2DataClient client = clientFactory.getGreengrassV2DataClient()) {
+            if (client == null) {
+                String errorMessage =
+                        clientFactory.getConfigValidationError() == null
+                                ? "Could not get GreengrassV2DataClient." : clientFactory.getConfigValidationError();
+                throw new DeviceConfigurationException(errorMessage);
+            }
+            UpdateConnectivityInfoRequest updateConnectivityInfoRequest =
+                    UpdateConnectivityInfoRequest.builder()
+                            .thingName(Coerce.toString(deviceConfiguration.getThingName()))
+                            .connectivityInfo(connectivityInfoItems).build();
 
-        return clientFactory.getGreengrassV2DataClient().updateConnectivityInfo(updateConnectivityInfoRequest);
+            return client.updateConnectivityInfo(updateConnectivityInfoRequest);
+        }
     }
 
     //For Junit Testing
