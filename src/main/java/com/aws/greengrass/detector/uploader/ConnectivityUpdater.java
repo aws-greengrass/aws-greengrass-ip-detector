@@ -12,14 +12,12 @@ import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
 import lombok.NonNull;
-import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
-import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -75,20 +73,7 @@ public class ConnectivityUpdater {
                 this.defaultPort = defaultPort;
                 logger.atInfo().kv("IPs", ips).kv("defaultPort", defaultPort).log("Uploaded IP addresses");
             }
-        } catch (GreengrassV2DataException | SdkClientException e) {
-            Throwable cause = e.getCause();
-
-            if (cause instanceof UnknownHostException) {
-                // Let the user know if Internet connectivity is lost so they do not try to debug their IAM policies
-                //   immediately
-                logger.atWarn()
-                        .log("Failed to upload the IP addresses. An unknown host exception was thrown. "
-                                + "This may indicate that Internet connectivity has been lost.");
-
-                return;
-            }
-
-            // Catch all error message
+        } catch (SdkException e) {
             logger.atWarn()
                     .log("Failed to upload the IP addresses. Check that the core device's IoT policy grants the "
                             + "greengrass:UpdateConnectivityInfo permission.", e);
