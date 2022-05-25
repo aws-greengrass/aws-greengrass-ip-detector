@@ -11,6 +11,7 @@ import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
+import com.aws.greengrass.util.Utils;
 import lombok.NonNull;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
@@ -76,7 +77,7 @@ public class ConnectivityUpdater {
                 logger.atInfo().kv("IPs", ips).kv("defaultPort", defaultPort).log("Uploaded IP addresses");
             }
         } catch (GreengrassV2DataException | SdkClientException e) {
-            Throwable cause = e.getCause();
+            Throwable cause = Utils.getUltimateCause(e);
 
             if (cause instanceof UnknownHostException) {
                 // Let the user know if Internet connectivity is lost so they do not try to debug their IAM policies
