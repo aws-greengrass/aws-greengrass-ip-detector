@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.greengrassv2data.GreengrassV2DataClient;
 import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
@@ -91,7 +92,7 @@ public class ConnectivityUpdaterTest {
         SdkClientException sdkClientException = SdkClientException.builder()
                 .cause(new UnknownHostException()).build();
         when(greengrassV2DataClient.updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class)))
-                .thenThrow(sdkClientException);
+                .thenThrow(SdkException.builder().cause(sdkClientException).build());
         List<String> ips = Collections.singletonList(TestConstants.IPV4_LOOPBACK);
         connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
     }
