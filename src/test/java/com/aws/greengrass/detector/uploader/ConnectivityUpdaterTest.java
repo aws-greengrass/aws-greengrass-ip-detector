@@ -86,8 +86,6 @@ public class ConnectivityUpdaterTest {
 
     @Test
     public void GIVEN_ip_addresses_WHEN_offline_uploadAddresses_THEN_passes() {
-        Topic thingNameTopic = Topic.of(context, DEVICE_PARAM_THING_NAME, "testThing");
-        Mockito.doReturn(thingNameTopic).when(deviceConfiguration).getThingName();
         connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
         // Cause UnknownHostException to simulate offline device
         SdkClientException sdkClientException = SdkClientException.builder()
