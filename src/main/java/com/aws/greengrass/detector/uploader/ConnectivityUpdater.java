@@ -91,10 +91,10 @@ public class ConnectivityUpdater {
             if (e instanceof SdkServiceException
                     && HttpStatusCode.FORBIDDEN == ((SdkServiceException) e).statusCode()) {
                 logger.atWarn()
-                        .log("Failed to upload the IP addresses. Make sure that the core device's IoT policy grants the "
-                                + "greengrass:UpdateConnectivityInfo permission. " +
-                                "Also the Greengrass service role must be associated to your AWS account with the " +
-                                "iot:GetThingShadow and iot:UpdateThingShadow permissions.", e);
+                        .log("Failed to upload the IP addresses. Make sure that the core device's IoT policy "
+                                + "grants the greengrass:UpdateConnectivityInfo permission. "
+                                + "Also the Greengrass service role must be associated to your AWS account with the "
+                                + "iot:GetThingShadow and iot:UpdateThingShadow permissions.", e);
                 return;
             }
             // Catch all error message
