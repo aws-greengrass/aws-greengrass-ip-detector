@@ -17,12 +17,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.greengrassv2data.GreengrassV2DataClient;
 import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.aws.greengrass.deployment.DeviceConfiguration.DEVICE_PARAM_THING_NAME;
@@ -78,6 +84,28 @@ public class ConnectivityUpdaterTest {
                 .thenThrow(GreengrassV2DataException.builder().build());
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IPV4_LOOPBACK);
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
+    }
+
+    @Test
+    public void GIVEN_ip_addresses_WHEN_offline_uploadAddresses_THEN_passes() {
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
+        // Cause UnknownHostException to simulate offline device
+        SdkClientException sdkClientException = SdkClientException.builder()
+                .cause(new UnknownHostException()).build();
+        when(greengrassV2DataClient.updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class)))
+                .thenThrow(SdkException.builder().cause(sdkClientException).build());
+        List<String> ips = Collections.singletonList(TestConstants.IPV4_LOOPBACK);
+        connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
+    }
+
+    @Test
+    public void GIVEN_ip_addresses_WHEN_uploadAddresses_forbidden_THEN_passes() {
+        connectivityUpdater = new ConnectivityUpdater(deviceConfiguration, clientFactory);
+        SdkServiceException forbidden = SdkServiceException.builder().statusCode(HttpStatusCode.FORBIDDEN).build();
+        when(greengrassV2DataClient.updateConnectivityInfo(Mockito.any(UpdateConnectivityInfoRequest.class)))
+                .thenThrow(forbidden);
+        List<String> ips = Collections.singletonList(TestConstants.IPV4_LOOPBACK);
         connectivityUpdater.uploadAddresses(ips, Mockito.mock(Config.class));
     }
 
