@@ -11,10 +11,12 @@ import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
 import com.aws.greengrass.util.GreengrassServiceClientFactory;
+import com.aws.greengrass.util.Utils;
 import lombok.NonNull;
-import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.core.exception.SdkServiceException;
+import software.amazon.awssdk.http.HttpStatusCode;
 import software.amazon.awssdk.services.greengrassv2data.model.ConnectivityInfo;
-import software.amazon.awssdk.services.greengrassv2data.model.GreengrassV2DataException;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoRequest;
 import software.amazon.awssdk.services.greengrassv2data.model.UpdateConnectivityInfoResponse;
 
@@ -59,6 +61,7 @@ public class ConnectivityUpdater {
         uploadAddresses(ips, config);
     }
 
+    @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
     synchronized void uploadAddresses(List<String> ips, Config config) {
         int defaultPort = config.getDefaultPort();
         if (!hasIpsChanged(ips) && defaultPort == this.defaultPort) {
@@ -75,10 +78,8 @@ public class ConnectivityUpdater {
                 this.defaultPort = defaultPort;
                 logger.atInfo().kv("IPs", ips).kv("defaultPort", defaultPort).log("Uploaded IP addresses");
             }
-        } catch (GreengrassV2DataException | SdkClientException e) {
-            Throwable cause = e.getCause();
-
-            if (cause instanceof UnknownHostException) {
+        } catch (SdkException e) {
+            if (Utils.getUltimateCause(e) instanceof UnknownHostException) {
                 // Let the user know if Internet connectivity is lost so they do not try to debug their IAM policies
                 //   immediately
                 logger.atWarn()
@@ -87,11 +88,18 @@ public class ConnectivityUpdater {
 
                 return;
             }
-
+            if (e instanceof SdkServiceException
+                    && HttpStatusCode.FORBIDDEN == ((SdkServiceException) e).statusCode()) {
+                logger.atWarn()
+                        .log("Failed to upload the IP addresses. Make sure that the core device's IoT policy "
+                                + "grants the greengrass:UpdateConnectivityInfo permission. "
+                                + "Also the Greengrass service role must be associated to your AWS account with the "
+                                + "iot:GetThingShadow and iot:UpdateThingShadow permissions.", e);
+                return;
+            }
             // Catch all error message
             logger.atWarn()
-                    .log("Failed to upload the IP addresses. Check that the core device's IoT policy grants the "
-                            + "greengrass:UpdateConnectivityInfo permission.", e);
+                    .log("Failed to upload the IP addresses.", e);
         }
     }
 
