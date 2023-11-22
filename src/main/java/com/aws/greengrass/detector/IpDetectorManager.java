@@ -10,7 +10,6 @@ import com.aws.greengrass.detector.detector.IpDetector;
 import com.aws.greengrass.detector.uploader.ConnectivityUpdater;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
-import lombok.NonNull;
 
 import java.net.InetAddress;
 import java.net.SocketException;
@@ -41,7 +40,6 @@ public class IpDetectorManager {
             ipAddresses = ipDetector.getAllIpAddresses(config);
             logger.atInfo().kv("IpAddresses", ipAddresses)
                     .log("Acquired host IP addresses");
-            // Could remove the traffic shifting shared ip address here.
             if (ipAddresses.isEmpty()) {
                 return;
             }

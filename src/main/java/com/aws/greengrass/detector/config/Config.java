@@ -21,7 +21,7 @@ public class Config {
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
     static final String DEFAULT_PORT_CONFIG_KEY = "defaultPort";
-    static final String EXCLUDE_IP_ADDRESSES_CONFIG_KEY ="excludeIPAddrs";
+    static final String EXCLUDE_IP_ADDRESSES_CONFIG_KEY = "excludeIPAddrs";
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
     static final int DEFAULT_PORT = 8883;
@@ -102,6 +102,10 @@ public class Config {
         return this.defaultPort.get();
     }
 
+    /**
+     * excludeIPAddrs getter.
+     * @return String excludeIPAddrs
+     */
     public String getExcludeIPAddrs() { return this.excludeIPAddrs.get(); }
 }
 
