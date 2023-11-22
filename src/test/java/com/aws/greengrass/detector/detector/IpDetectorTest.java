@@ -17,6 +17,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,6 +45,7 @@ class IpDetectorTest {
         // include IPv4 Loopback addresses and Link-Local addresses
         Mockito.doReturn(true).when(config).isIncludeIPv4LoopbackAddrs();
         Mockito.doReturn(true).when(config).isIncludeIPv4LinkLocalAddrs();
+        Mockito.doReturn("").when(config).getExcludeIPAddrs();
 
         networkInterfaces.add(networkInterface1);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
@@ -69,6 +71,7 @@ class IpDetectorTest {
         // Exclude IPv4 Loopback addresses and Link-Local addresses
         Mockito.doReturn(false).when(config).isIncludeIPv4LoopbackAddrs();
         Mockito.doReturn(false).when(config).isIncludeIPv4LinkLocalAddrs();
+        Mockito.doReturn("").when(config).getExcludeIPAddrs();
 
         networkInterfaces.add(networkInterface);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
@@ -96,6 +99,32 @@ class IpDetectorTest {
         ipDetector = new IpDetector();
         List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, Mockito.mock(Config.class));
         assertTrue(ipAddresses.isEmpty());
+    }
+
+    @Test
+    public void GIVEN_excludeIPAddrs_WHEN_get_ipAddresses_THEN_excludeIPAddrs_filtered() throws SocketException {
+        // lets exclude IP_1 (0.61.124.18)
+        NetworkInterface networkInterface = Mockito.mock(NetworkInterface.class);
+        Config config = Mockito.mock(Config.class);
+
+        List<NetworkInterface> networkInterfaces = new ArrayList<>();
+        List<InterfaceAddress> interfaceAddresses = getAllAddresses();
+
+        Mockito.doReturn(interfaceAddresses).when(networkInterface).getInterfaceAddresses();
+        Mockito.doReturn(true).when(networkInterface).isUp();
+        // Exclude IPv4 Loopback addresses and Link-Local addresses
+        Mockito.doReturn(true).when(config).isIncludeIPv4LoopbackAddrs();
+        Mockito.doReturn(true).when(config).isIncludeIPv4LinkLocalAddrs();
+        Mockito.doReturn(TestConstants.IP_1).when(config).getExcludeIPAddrs();
+
+        networkInterfaces.add(networkInterface);
+        Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
+        ipDetector = new IpDetector();
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, config);
+
+        assertEquals(2, ipAddresses.size());
+        assertEquals(TestConstants.IPV4_LOOPBACK, ipAddresses.get(0).getHostAddress());
+        assertEquals(TestConstants.IPV4_LINK_LOCAL, ipAddresses.get(1).getHostAddress());
     }
 
     private List<InterfaceAddress> getAllAddresses() {

@@ -13,6 +13,7 @@ import com.aws.greengrass.util.Coerce;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Config {
     private final Logger logger = LogManager.getLogger(Config.class);
@@ -20,13 +21,18 @@ public class Config {
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
     static final String DEFAULT_PORT_CONFIG_KEY = "defaultPort";
+    static final String EXCLUDE_IP_ADDRESSES_CONFIG_KEY ="excludeIPAddrs";
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
     static final int DEFAULT_PORT = 8883;
+    // Comma-separated list of IP addresses to be excluded from the IP address list.
+    static final String DEFAULT_EXCLUDE_IP_ADDRESSES = "";
+
 
     private AtomicInteger defaultPort = new AtomicInteger(DEFAULT_PORT);
     private AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
     private AtomicBoolean includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+    private AtomicReference<String> excludeIPAddrs = new AtomicReference<>(DEFAULT_EXCLUDE_IP_ADDRESSES);
 
     /**
      * Config constructor.
@@ -40,6 +46,7 @@ public class Config {
                 this.includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
                 this.includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
                 this.defaultPort = new AtomicInteger(DEFAULT_PORT);
+                this.excludeIPAddrs = new AtomicReference<>(DEFAULT_EXCLUDE_IP_ADDRESSES);
                 return;
             }
 
@@ -57,10 +64,16 @@ public class Config {
                     Coerce.toInt(
                             configurationTopics.findOrDefault(DEFAULT_PORT,
                                     DEFAULT_PORT_CONFIG_KEY)));
+            this.excludeIPAddrs = new AtomicReference<>(
+                    Coerce.toString(
+                            configurationTopics.findOrDefault(
+                                    DEFAULT_EXCLUDE_IP_ADDRESSES,
+                                    EXCLUDE_IP_ADDRESSES_CONFIG_KEY)));
 
             logger.atInfo().kv("includeIPv4LoopbackAddrs", includeIPv4LoopbackAddrs.get())
                     .kv("includeIPv4LinkLocalAddrs", includeIPv4LinkLocalAddrs.get())
                     .kv("defaultPort", defaultPort.get())
+                    .kv("excludeIPAddrs", excludeIPAddrs.get())
                     .log("Configuration updated");
         });
     }
@@ -88,6 +101,8 @@ public class Config {
     public int getDefaultPort() {
         return this.defaultPort.get();
     }
+
+    public String getExcludeIPAddrs() { return this.excludeIPAddrs.get(); }
 }
 
 

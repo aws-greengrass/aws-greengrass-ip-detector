@@ -32,6 +32,7 @@ class ConfigTest {
         Topics configTopics = Mockito.mock(Topics.class);
         String mockIncludeIPv4LoopbackAddrsConfig = "true";
         String mockIncludeIPv4LinkLocalAddrsConfig = "true";
+        String mockExludeIPAddrs = "10.0.0.1,10.0.0.2";
         int mockPortValue = 9000;
 
         // stub subscribe() to call just the callback method without adding watcher
@@ -48,6 +49,8 @@ class ConfigTest {
                 .when(configTopics).findOrDefault(anyBoolean(), eq(Config.INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY));
         Mockito.doReturn(mockPortValue)
                 .when(configTopics).findOrDefault(anyInt(), eq(Config.DEFAULT_PORT_CONFIG_KEY));
+        Mockito.doReturn(mockExludeIPAddrs)
+                .when(configTopics).findOrDefault(anyString(), eq(Config.EXCLUDE_IP_ADDRESSES_CONFIG_KEY));
 
         Mockito.doReturn(configTopics).when(topics).lookupTopics(anyString());
         config = new Config(topics);
@@ -56,6 +59,7 @@ class ConfigTest {
         assertEquals(mockPortValue, config.getDefaultPort());
         assertEquals(Coerce.toBoolean(mockIncludeIPv4LoopbackAddrsConfig), config.isIncludeIPv4LoopbackAddrs());
         assertEquals(Coerce.toBoolean(mockIncludeIPv4LinkLocalAddrsConfig), config.isIncludeIPv4LinkLocalAddrs());
+        assertEquals(mockExludeIPAddrs, config.getExcludeIPAddrs());
     }
 
     @Test

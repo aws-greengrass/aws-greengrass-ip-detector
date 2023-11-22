@@ -53,6 +53,9 @@ public class IpDetector {
                 if (address.isLinkLocalAddress() && !config.isIncludeIPv4LinkLocalAddrs()) {
                     continue;
                 }
+                if (!config.getExcludeIPAddrs().isEmpty() && config.getExcludeIPAddrs().contains(address.getHostAddress())) {
+                    continue;
+                }
                 ipAddresses.add(address);
             }
         }
