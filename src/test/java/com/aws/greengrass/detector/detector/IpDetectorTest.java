@@ -22,8 +22,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith({MockitoExtension.class})
@@ -96,6 +98,34 @@ class IpDetectorTest {
         ipDetector = new IpDetector();
         List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, Mockito.mock(Config.class));
         assertTrue(ipAddresses.isEmpty());
+    }
+
+    @Test
+    public void GIVEN_excludeIPAddresses_WHEN_get_ipAddresses_THEN_excludeIPs_filtered() throws SocketException {
+        // exclude IP_1 (0.61.124.18)
+        NetworkInterface networkInterface = Mockito.mock(NetworkInterface.class);
+        Config config = Mockito.mock(Config.class);
+
+        List<NetworkInterface> networkInterfaces = new ArrayList<>();
+        List<InterfaceAddress> interfaceAddresses = getAllAddresses();
+
+        Mockito.doReturn(interfaceAddresses).when(networkInterface).getInterfaceAddresses();
+        Mockito.doReturn(true).when(networkInterface).isUp();
+        // Exclude IPv4 Loopback addresses and Link-Local addresses
+        Mockito.doReturn(true).when(config).isIncludeIPv4LoopbackAddrs();
+        Mockito.doReturn(true).when(config).isIncludeIPv4LinkLocalAddrs();
+        Mockito.doReturn(Collections.singletonList(TestConstants.IP_1)).when(config).getExcludedIPAddresses();
+
+        networkInterfaces.add(networkInterface);
+        Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
+        ipDetector = new IpDetector();
+        List<InetAddress> ipAddresses = ipDetector.getIpAddresses(enumeration, config);
+
+        assertEquals(2, ipAddresses.size());
+        assertFalse(ipAddresses.stream().map(InetAddress::getHostAddress)
+                .collect(Collectors.joining()).contains(TestConstants.IP_1));
+        assertEquals(TestConstants.IPV4_LOOPBACK, ipAddresses.get(0).getHostAddress());
+        assertEquals(TestConstants.IPV4_LINK_LOCAL, ipAddresses.get(1).getHostAddress());
     }
 
     private List<InterfaceAddress> getAllAddresses() {
