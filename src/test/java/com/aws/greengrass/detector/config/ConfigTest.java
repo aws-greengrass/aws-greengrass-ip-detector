@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,8 +39,8 @@ class ConfigTest {
         Topic excludedIpTopic = Mockito.mock(Topic.class);
         String mockIncludeIPv4LoopbackAddrsConfig = "true";
         String mockIncludeIPv4LinkLocalAddrsConfig = "true";
-        String mockExcludeIPsConfig = String.format("[%s]", TestConstants.IP_1);
-        List<String> mockList = Collections.singletonList(TestConstants.IP_1);
+        String mockExcludeIPsConfig = String.format("[%s, %s]", TestConstants.IP_1, TestConstants.IP_2);
+        List<String> mockList = Arrays.asList(TestConstants.IP_1, TestConstants.IP_2);
         int mockPortValue = 9000;
 
         // stub subscribe() to call just the callback method without adding watcher
@@ -67,7 +67,8 @@ class ConfigTest {
         assertEquals(mockPortValue, config.getDefaultPort());
         assertEquals(Coerce.toBoolean(mockIncludeIPv4LoopbackAddrsConfig), config.isIncludeIPv4LoopbackAddrs());
         assertEquals(Coerce.toBoolean(mockIncludeIPv4LinkLocalAddrsConfig), config.isIncludeIPv4LinkLocalAddrs());
-        assertEquals(Coerce.toStringList(mockExcludeIPsConfig), config.getExcludedIPAddresses());
+        assertEquals(config.getExcludedIPAddresses().size(), Coerce.toStringList(mockExcludeIPsConfig).size());
+        assertTrue(config.getExcludedIPAddresses().containsAll(Coerce.toStringList(mockExcludeIPsConfig)));
     }
 
     @Test

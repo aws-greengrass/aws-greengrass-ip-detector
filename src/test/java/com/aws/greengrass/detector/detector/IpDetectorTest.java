@@ -114,7 +114,7 @@ class IpDetectorTest {
         // Exclude IPv4 Loopback addresses and Link-Local addresses
         Mockito.doReturn(true).when(config).isIncludeIPv4LoopbackAddrs();
         Mockito.doReturn(true).when(config).isIncludeIPv4LinkLocalAddrs();
-        Mockito.doReturn(Collections.singletonList(TestConstants.IP_1)).when(config).getExcludedIPAddresses();
+        Mockito.doReturn(Collections.singleton(TestConstants.IP_1)).when(config).getExcludedIPAddresses();
 
         networkInterfaces.add(networkInterface);
         Enumeration<NetworkInterface> enumeration = Collections.enumeration(networkInterfaces);
