@@ -44,6 +44,9 @@ public class IpDetector {
 
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress address = interfaceAddress.getAddress();
+                if (config.getExcludedIPAddresses().contains(address.getHostAddress())) {
+                    continue;
+                }
                 if (address instanceof Inet6Address) {
                     continue;
                 }
