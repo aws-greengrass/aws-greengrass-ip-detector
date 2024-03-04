@@ -38,7 +38,7 @@ public class IpDetectorManager {
         List<InetAddress> ipAddresses = null;
         try {
             ipAddresses = ipDetector.getAllIpAddresses(config);
-            logger.atInfo().kv("IpAddresses", ipAddresses)
+            logger.atDebug().kv("IpAddresses", ipAddresses)
                     .log("Acquired host IP addresses");
             if (ipAddresses.isEmpty()) {
                 return;
