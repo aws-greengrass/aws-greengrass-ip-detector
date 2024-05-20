@@ -170,7 +170,7 @@ public class ConnectivityUpdaterTest {
     private List<String> getNewIps() {
         List<String> ips = new ArrayList<>();
         ips.add(TestConstants.IPV4_LOOPBACK);
-        ips.add(TestConstants.IP_2);
+        ips.add(TestConstants.IPV6_LOOPBACK);
         return ips;
     }
 }
