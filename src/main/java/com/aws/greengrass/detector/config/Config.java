@@ -6,11 +6,16 @@
 package com.aws.greengrass.detector.config;
 
 import com.aws.greengrass.componentmanager.KernelConfigResolver;
+import com.aws.greengrass.config.Topic;
 import com.aws.greengrass.config.Topics;
 import com.aws.greengrass.logging.api.Logger;
 import com.aws.greengrass.logging.impl.LogManager;
 import com.aws.greengrass.util.Coerce;
+import lombok.Getter;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +24,7 @@ public class Config {
 
     static final String INCLUDE_IPV4_LOOPBACK_ADDRESSES_CONFIG_KEY = "includeIPv4LoopbackAddrs";
     static final String INCLUDE_IPV4_LINK_LOCAL_ADDRESSES_CONFIG_KEY = "includeIPv4LinkLocalAddrs";
+    static final String EXCLUDED_IP_ADDRESSES_CONFIG_KEY = "excludedIPAddresses";
     static final String DEFAULT_PORT_CONFIG_KEY = "defaultPort";
     static final boolean DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES = false;
     static final boolean DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES = false;
@@ -27,6 +33,8 @@ public class Config {
     private AtomicInteger defaultPort = new AtomicInteger(DEFAULT_PORT);
     private AtomicBoolean includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
     private AtomicBoolean includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+    @Getter
+    private final Set<String> excludedIPAddresses = new HashSet<>();
 
     /**
      * Config constructor.
@@ -39,6 +47,7 @@ public class Config {
             if (configurationTopics.isEmpty()) {
                 this.includeIPv4LoopbackAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LOOPBACK_ADDRESSES);
                 this.includeIPv4LinkLocalAddrs = new AtomicBoolean(DEFAULT_INCLUDE_IPV4_LINK_LOCAL_ADDRESSES);
+                this.excludedIPAddresses.clear();
                 this.defaultPort = new AtomicInteger(DEFAULT_PORT);
                 return;
             }
@@ -57,9 +66,20 @@ public class Config {
                     Coerce.toInt(
                             configurationTopics.findOrDefault(DEFAULT_PORT,
                                     DEFAULT_PORT_CONFIG_KEY)));
+            Topic excludedIPTopic = configurationTopics.find(EXCLUDED_IP_ADDRESSES_CONFIG_KEY);
+            if (excludedIPTopic != null) {
+                if (excludedIPTopic.getOnce() instanceof List) {
+                    this.excludedIPAddresses.clear();
+                    this.excludedIPAddresses.addAll(Coerce.toStringList(excludedIPTopic.getOnce()));
+                } else {
+                    logger.atWarn().kv("value", excludedIPTopic.getOnce()).log("Invalid config value for"
+                            + " excludedIPAddresses. The config must be input as a list");
+                }
+            }
 
             logger.atInfo().kv("includeIPv4LoopbackAddrs", includeIPv4LoopbackAddrs.get())
                     .kv("includeIPv4LinkLocalAddrs", includeIPv4LinkLocalAddrs.get())
+                    .kv("excludedIPAddresses", excludedIPAddresses)
                     .kv("defaultPort", defaultPort.get())
                     .log("Configuration updated");
         });
