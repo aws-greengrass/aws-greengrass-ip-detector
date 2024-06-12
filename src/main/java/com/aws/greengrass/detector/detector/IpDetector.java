@@ -45,13 +45,25 @@ public class IpDetector {
             for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
                 InetAddress address = interfaceAddress.getAddress();
                 if (address instanceof Inet6Address) {
-                    continue;
-                }
-                if (address.isLoopbackAddress() && !config.isIncludeIPv4LoopbackAddrs()) {
-                    continue;
-                }
-                if (address.isLinkLocalAddress() && !config.isIncludeIPv4LinkLocalAddrs()) {
-                    continue;
+                    if (!config.isIncludeIPv6Addrs()) {
+                        continue;
+                    }
+                    if (address.isLinkLocalAddress() && !config.isIncludeIPv6LinkLocalAddrs()) {
+                        continue;
+                    }
+                    if (address.isLoopbackAddress() && !config.isIncludeIPv6LoopbackAddrs()) {
+                        continue;
+                    }
+                } else {
+                    if (!config.isIncludeIPv4Addrs()) {
+                        continue;
+                    }
+                    if (address.isLoopbackAddress() && !config.isIncludeIPv4LoopbackAddrs()) {
+                        continue;
+                    }
+                    if (address.isLinkLocalAddress() && !config.isIncludeIPv4LinkLocalAddrs()) {
+                        continue;
+                    }
                 }
                 ipAddresses.add(address);
             }
